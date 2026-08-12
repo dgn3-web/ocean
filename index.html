@@ -233,91 +233,38 @@
                 <div class="glass-panel rounded-2xl p-6 text-center">
                     <h2 class="text-2xl font-bold mb-2"><i class="fas fa-book text-amber-700 mr-2"></i>분실물 찾아주기 도감</h2>
                     <p class="text-sm text-gray-600 mb-2">학생들이 자주 잃어버리는 물건을 주워서 주인에게 찾아주면 도감이 채워집니다.</p>
-                    <p class="text-xs text-red-500 font-bold mb-6">모든 도감을 채우면 무려 500토큰 지급!</p>
+                    <p class="text-xs text-red-500 font-bold mb-6">모든 도감을 채우면 무려 500토큰 지급! (회색 아이콘을 클릭하여 수집해보세요)</p>
                     
                     <div class="flex justify-between items-center bg-amber-50 rounded-xl p-4 mb-6 border border-amber-200">
                         <div class="text-amber-800 font-bold">수집률</div>
                         <div class="text-2xl font-black text-amber-600"><span id="pokedex-count">0</span> / 6</div>
                     </div>
 
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8" id="pokedex-grid">
                         <!-- Items -->
-                        <div class="pokedex-item flex flex-col items-center justify-center p-4 bg-gray-100 rounded-xl border-2 border-gray-200 transition" id="dex-1">
+                        <div class="pokedex-item flex flex-col items-center justify-center p-4 bg-gray-100 rounded-xl border-2 border-gray-200 cursor-pointer hover:shadow-md transition" id="dex-1" onclick="collectLostItem(1)">
                             <i class="fas fa-tshirt text-4xl text-gray-300 mb-2 dex-icon"></i>
                             <span class="text-sm font-bold text-gray-400 dex-name">체육복</span>
                         </div>
-                        <div class="pokedex-item flex flex-col items-center justify-center p-4 bg-gray-100 rounded-xl border-2 border-gray-200 transition" id="dex-2">
+                        <div class="pokedex-item flex flex-col items-center justify-center p-4 bg-gray-100 rounded-xl border-2 border-gray-200 cursor-pointer hover:shadow-md transition" id="dex-2" onclick="collectLostItem(2)">
                             <i class="fas fa-umbrella text-4xl text-gray-300 mb-2 dex-icon"></i>
                             <span class="text-sm font-bold text-gray-400 dex-name">우산</span>
                         </div>
-                        <div class="pokedex-item flex flex-col items-center justify-center p-4 bg-gray-100 rounded-xl border-2 border-gray-200 transition" id="dex-3">
+                        <div class="pokedex-item flex flex-col items-center justify-center p-4 bg-gray-100 rounded-xl border-2 border-gray-200 cursor-pointer hover:shadow-md transition" id="dex-3" onclick="collectLostItem(3)">
                             <i class="fas fa-headphones text-4xl text-gray-300 mb-2 dex-icon"></i>
                             <span class="text-sm font-bold text-gray-400 dex-name">무선 이어폰</span>
                         </div>
-                        <div class="pokedex-item flex flex-col items-center justify-center p-4 bg-gray-100 rounded-xl border-2 border-gray-200 transition" id="dex-4">
+                        <div class="pokedex-item flex flex-col items-center justify-center p-4 bg-gray-100 rounded-xl border-2 border-gray-200 cursor-pointer hover:shadow-md transition" id="dex-4" onclick="collectLostItem(4)">
                             <i class="fas fa-id-card text-4xl text-gray-300 mb-2 dex-icon"></i>
                             <span class="text-sm font-bold text-gray-400 dex-name">학생증</span>
                         </div>
-                        <div class="pokedex-item flex flex-col items-center justify-center p-4 bg-gray-100 rounded-xl border-2 border-gray-200 transition" id="dex-5">
+                        <div class="pokedex-item flex flex-col items-center justify-center p-4 bg-gray-100 rounded-xl border-2 border-gray-200 cursor-pointer hover:shadow-md transition" id="dex-5" onclick="collectLostItem(5)">
                             <i class="fas fa-glasses text-4xl text-gray-300 mb-2 dex-icon"></i>
                             <span class="text-sm font-bold text-gray-400 dex-name">안경</span>
                         </div>
-                        <div class="pokedex-item flex flex-col items-center justify-center p-4 bg-gray-100 rounded-xl border-2 border-gray-200 transition" id="dex-6">
+                        <div class="pokedex-item flex flex-col items-center justify-center p-4 bg-gray-100 rounded-xl border-2 border-gray-200 cursor-pointer hover:shadow-md transition" id="dex-6" onclick="collectLostItem(6)">
                             <i class="fas fa-mug-hot text-4xl text-gray-300 mb-2 dex-icon"></i>
                             <span class="text-sm font-bold text-gray-400 dex-name">텀블러</span>
-                        </div>
-                    </div>
-
-                    <button onclick="simulateFindLostItem()" class="bg-gray-800 text-white font-bold py-3 px-8 rounded-xl hover:bg-gray-700 transition shadow-lg w-full md:w-auto">
-                        <i class="fas fa-search-plus mr-1"></i> 분실물 찾아주기 신고 (시뮬레이션)
-                    </button>
-                </div>
-            </section>
-
-            <section id="view-calendar" class="view-section">
-                <div class="glass-panel rounded-2xl p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold"><i class="far fa-calendar-alt text-blue-500 mr-2"></i>학교 연계 프로젝트 캘린더</h2>
-                        <div class="text-lg font-bold">2026년 8월</div>
-                    </div>
-                    
-                    <div class="grid grid-cols-7 gap-1 text-center text-sm font-bold mb-2">
-                        <div class="text-red-500">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div class="text-blue-500">토</div>
-                    </div>
-                    <div class="grid grid-cols-7 gap-2 text-sm" id="calendar-grid">
-                        <!-- Filled by JS -->
-                    </div>
-
-                    <div class="mt-6 pt-4 border-t border-gray-200">
-                        <h3 class="font-bold mb-2">이번 달 주요 프로젝트</h3>
-                        <ul class="space-y-2 text-sm">
-                            <li class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-green-500"></span> <strong>8/12:</strong> 잔반 없는 날 특별 이벤트 (토큰 2배)</li>
-                            <li class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-purple-500"></span> <strong>8/20:</strong> 학급 대항 스포츠 데이</li>
-                            <li class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-yellow-500"></span> <strong>8/30:</strong> 분실물 찾아주기 집중 기간 종료</li>
-                        </ul>
-                    </div>
-                </div>
-            </section>
-
-            <section id="view-map" class="view-section">
-                <div class="glass-panel rounded-2xl p-6">
-                    <h2 class="text-2xl font-bold mb-2"><i class="fas fa-map-marked-alt text-teal-600 mr-2"></i>학교 지도</h2>
-                    <p class="text-sm text-gray-600 mb-4">불편사항 신고나 분실물 위치를 설명할 때 지도를 참고하세요.</p>
-                    
-                    <div class="relative rounded-xl overflow-hidden border-2 border-gray-200 bg-gray-100 flex items-center justify-center p-4">
-                        <!-- Map Image placeholder -->
-                        <img src="https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=1000&q=80" alt="School Map View" class="w-full rounded-lg opacity-80 mix-blend-multiply">
-                        
-                        <!-- Overlay labels simulating map zones -->
-                        <div class="absolute inset-0 p-8 grid grid-cols-3 grid-rows-3 gap-4 pointer-events-none">
-                            <div class="bg-white/80 backdrop-blur border border-gray-300 rounded-lg flex items-center justify-center font-bold text-gray-800 shadow">본관 (1학년)</div>
-                            <div class="bg-white/80 backdrop-blur border border-gray-300 rounded-lg flex items-center justify-center font-bold text-gray-800 shadow">본관 (2학년)</div>
-                            <div class="bg-white/80 backdrop-blur border border-gray-300 rounded-lg flex items-center justify-center font-bold text-gray-800 shadow">신관 (3학년)</div>
-                            <div class="col-span-2 bg-green-100/80 backdrop-blur border border-green-300 rounded-lg flex items-center justify-center font-bold text-green-800 shadow">운동장</div>
-                            <div class="bg-blue-100/80 backdrop-blur border border-blue-300 rounded-lg flex items-center justify-center font-bold text-blue-800 shadow">체육관</div>
-                            <div class="bg-yellow-100/80 backdrop-blur border border-yellow-300 rounded-lg flex items-center justify-center font-bold text-yellow-800 shadow">급식실</div>
-                            <div class="bg-purple-100/80 backdrop-blur border border-purple-300 rounded-lg flex items-center justify-center font-bold text-purple-800 shadow">도서관</div>
-                            <div class="bg-pink-100/80 backdrop-blur border border-pink-300 rounded-lg flex items-center justify-center font-bold text-pink-800 shadow">동아리실</div>
                         </div>
                     </div>
                 </div>
@@ -566,14 +513,18 @@
                 if (unlockedPokedex.includes(i)) {
                     el.classList.replace('bg-gray-100', 'bg-amber-50');
                     el.classList.replace('border-gray-200', 'border-amber-300');
+                    el.classList.replace('cursor-pointer', 'cursor-default');
+                    el.classList.remove('hover:shadow-md');
+                    
                     icon.classList.remove('text-gray-300');
                     icon.classList.add('text-amber-500');
+                    
                     name.classList.remove('text-gray-400');
                     name.classList.add('text-amber-800');
                 }
             }
             
-            if (unlockedPokedex.length === MAX_POKEDEX) {
+            if (unlockedPokedex.length === MAX_POKEDEX && !unlockedPokedex.includes(999)) {
                 // Prevent infinite rewarding by setting length higher or using a flag
                 unlockedPokedex.push(999); 
                 addTokens(500, "도감 완성 보너스!!");
@@ -581,26 +532,18 @@
             }
         }
 
-        function simulateFindLostItem() {
-            if (unlockedPokedex.length >= MAX_POKEDEX) {
-                showToast("이미 모든 도감을 완성했습니다!");
+        function collectLostItem(id) {
+            if (unlockedPokedex.includes(id)) {
+                showToast("이미 수집한 항목입니다.");
                 return;
             }
             
-            // Pick a random uncollected item
-            let available = [];
-            for (let i = 1; i <= MAX_POKEDEX; i++) {
-                if (!unlockedPokedex.includes(i)) available.push(i);
-            }
-            
-            const randIndex = Math.floor(Math.random() * available.length);
-            const foundId = available[randIndex];
-            
-            unlockedPokedex.push(foundId);
+            unlockedPokedex.push(id);
             addTokens(30, "분실물 찾아주기");
             updatePokedexUI();
             
-            showModal("새로운 도감 등록!", `<div class='text-center'><i class='fas fa-star text-4xl text-yellow-500 mb-2'></i><p class='font-bold'>분실물을 주인에게 찾아주어 도감이 채워졌습니다!</p></div>`);
+            const itemName = document.querySelector(`#dex-${id} .dex-name`).innerText;
+            showModal("새로운 도감 등록!", `<div class='text-center'><i class='fas fa-star text-4xl text-yellow-500 mb-2'></i><p class='font-bold'>[${itemName}]을(를) 주인에게 찾아주어 도감이 채워졌습니다!</p></div>`);
         }
 
         const marketItems = [
