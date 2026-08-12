@@ -6,731 +6,988 @@
     <title>우리가 발전 시키는 학교</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-    
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans KR"', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#10B981',
+                        accent: '#F59E0B',
+                        dark: '#1E293B',
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         body {
             font-family: 'Noto Sans KR', sans-serif;
-            /* Theme Background Image */
-            background-image: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2070&auto=format&fit=crop');
+            /* 학교 테마의 배경 이미지 적용 */
+            background-image: linear-gradient(rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.8)), url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2070&auto=format&fit=crop');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            margin: 0;
-            padding: 0;
+            color: white;
             min-height: 100vh;
-            color: #333;
-        }
-        
-        /* Dark overlay to ensure text readability over the background */
-        .bg-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.4);
-            z-index: -1;
+            margin: 0;
+            overflow-x: hidden;
         }
 
-        /* Glassmorphism effects */
         .glass-panel {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
         }
 
-        .view-section { display: none; }
-        .view-section.active { display: block; animation: fadeIn 0.3s ease-in-out; }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            color: #1e293b;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        @keyframes popIn {
-            0% { transform: scale(0.8); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
 
-        .nav-btn.active {
-            background-color: #3b82f6; /* blue-500 */
+        .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-left: 4px solid #F59E0B;
+        }
+
+        .toast-enter {
+            animation: slideIn 0.3s forwards;
+        }
+        .toast-leave {
+            animation: slideOut 0.3s forwards;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
+        /* 캘린더 스타일 */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            font-weight: 500;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .calendar-day:hover {
+            background: #4F46E5;
             color: white;
-            border-color: #3b82f6;
         }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.5); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
-
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: #10b981; /* emerald-500 */
+        .calendar-day.has-event {
+            background: #F59E0B;
             color: white;
-            padding: 12px 24px;
-            border-radius: 9999px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            z-index: 1000;
-            font-weight: 600;
+            font-weight: bold;
         }
-        .toast.show { transform: translateX(-50%) translateY(0); }
+
+        /* 도감 이미지 흑백 처리 */
+        .pokedex-item img {
+            filter: grayscale(100%) opacity(0.5);
+            transition: all 0.5s ease;
+        }
+        .pokedex-item.found img {
+            filter: grayscale(0%) opacity(1);
+        }
+        .pokedex-item.found {
+            border-color: #10B981;
+            background-color: rgba(16, 185, 129, 0.1);
+        }
     </style>
 </head>
-<body class="antialiased text-gray-800">
+<body class="flex flex-col md:flex-row h-screen antialiased">
 
-    <div class="bg-overlay"></div>
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-    <div id="toast" class="toast flex items-center gap-2">
-        <i class="fas fa-check-circle"></i> <span id="toast-msg">메시지</span>
-    </div>
+    <nav class="glass-panel w-full md:w-64 md:h-full flex-shrink-0 flex flex-col justify-between overflow-y-auto">
+        <div>
+            <div class="p-6 text-center border-b border-white/20">
+                <i class="fa-solid fa-school text-4xl text-accent mb-2"></i>
+                <h1 class="text-xl font-bold leading-tight tracking-wider">우리가 발전 시키는<br><span class="text-accent text-2xl">학교</span></h1>
+            </div>
+            
+            <div class="p-4 flex items-center gap-4 border-b border-white/20">
+                <div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-xl shadow-inner">
+                    <i class="fa-solid fa-user-graduate"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-300">2학년 3반</p>
+                    <p class="font-bold">김학생 <span class="text-xs font-normal text-gray-300">님</span></p>
+                    <p class="text-accent text-sm mt-1 font-bold"><i class="fa-solid fa-coins mr-1"></i><span id="user-tokens-display">150</span> 토큰</p>
+                </div>
+            </div>
 
-    <!-- Custom Alert/Modal -->
-    <div id="custom-modal" class="fixed inset-0 z-[1050] hidden items-center justify-center bg-black bg-opacity-60 px-4">
-        <div class="glass-panel rounded-2xl w-full max-w-md p-6 transform transition-all shadow-2xl popIn">
-            <h3 id="modal-title" class="text-xl font-bold mb-4 text-gray-900 border-b pb-2">알림</h3>
-            <div id="modal-content" class="text-gray-700 mb-6 max-h-[60vh] overflow-y-auto"></div>
-            <div id="modal-actions" class="flex justify-end gap-2">
-                <button onclick="closeModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">닫기</button>
+            <ul class="flex md:flex-col p-2 gap-1 overflow-x-auto md:overflow-x-visible">
+                <li><button onclick="switchView('home')" class="nav-item active w-full text-left p-3 rounded hover:bg-white/10 transition flex items-center gap-3 whitespace-nowrap"><i class="fa-solid fa-house w-5 text-center"></i> 홈</button></li>
+                <li><button onclick="switchView('report')" class="nav-item w-full text-left p-3 rounded hover:bg-white/10 transition flex items-center gap-3 whitespace-nowrap"><i class="fa-solid fa-bullhorn w-5 text-center"></i> 신고 & 건의</button></li>
+                <li><button onclick="switchView('calendar')" class="nav-item w-full text-left p-3 rounded hover:bg-white/10 transition flex items-center gap-3 whitespace-nowrap"><i class="fa-solid fa-calendar-days w-5 text-center"></i> 캘린더</button></li>
+                <li><button onclick="switchView('edu')" class="nav-item w-full text-left p-3 rounded hover:bg-white/10 transition flex items-center gap-3 whitespace-nowrap"><i class="fa-solid fa-book-open w-5 text-center"></i> 교육 & 퀴즈</button></li>
+                <li><button onclick="switchView('meal')" class="nav-item w-full text-left p-3 rounded hover:bg-white/10 transition flex items-center gap-3 whitespace-nowrap"><i class="fa-solid fa-utensils w-5 text-center"></i> 급식 챌린지</button></li>
+                <li><button onclick="switchView('pokedex')" class="nav-item w-full text-left p-3 rounded hover:bg-white/10 transition flex items-center gap-3 whitespace-nowrap"><i class="fa-solid fa-magnifying-glass-location w-5 text-center"></i> 분실물 도감</button></li>
+                <li><button onclick="switchView('market')" class="nav-item w-full text-left p-3 rounded hover:bg-white/10 transition flex items-center gap-3 whitespace-nowrap"><i class="fa-solid fa-store w-5 text-center"></i> 토큰 마켓</button></li>
+                <li><button onclick="switchView('ranking')" class="nav-item w-full text-left p-3 rounded hover:bg-white/10 transition flex items-center gap-3 whitespace-nowrap"><i class="fa-solid fa-chart-simple w-5 text-center"></i> 랭킹 (야구장 이벤트)</button></li>
+            </ul>
+        </div>
+        <div class="p-4 text-xs text-center text-gray-400">
+            &copy; 2026 우리가 발전 시키는 학교
+        </div>
+    </nav>
+
+    <main class="flex-1 h-full overflow-y-auto p-4 md:p-8 relative">
+        
+        <!-- View: Home -->
+        <div id="view-home" class="view-section animate-fade-in">
+            <h2 class="text-3xl font-bold mb-6 text-white shadow-sm">안녕하세요, 학교 발전에 참여해 주세요!</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <!-- 요약 카드 1 -->
+                <div class="glass-card p-6 flex items-center justify-between cursor-pointer" onclick="switchView('ranking')">
+                    <div>
+                        <h3 class="text-gray-500 font-bold mb-1">이번 학기 목표</h3>
+                        <p class="text-2xl font-black text-primary">학년별 1위 반 <br><span class="text-accent text-3xl">야구장 직관!</span></p>
+                    </div>
+                    <i class="fa-solid fa-baseball text-5xl text-gray-200"></i>
+                </div>
+                <!-- 요약 카드 2 -->
+                <div class="glass-card p-6 flex items-center justify-between cursor-pointer" onclick="switchView('pokedex')">
+                    <div>
+                        <h3 class="text-gray-500 font-bold mb-1">나의 도감 진행도</h3>
+                        <p class="text-3xl font-black text-secondary"><span id="pokedex-progress">0</span> / 8</p>
+                        <p class="text-xs text-gray-400 mt-1">다 채우면 500토큰 지급!</p>
+                    </div>
+                    <i class="fa-solid fa-box-open text-5xl text-gray-200"></i>
+                </div>
+                <!-- 요약 카드 3 -->
+                <div class="glass-card p-6 flex items-center justify-between cursor-pointer" onclick="switchView('edu')">
+                    <div>
+                        <h3 class="text-gray-500 font-bold mb-1">완료한 교육/퀴즈</h3>
+                        <p class="text-3xl font-black text-indigo-600"><span id="quiz-progress">0</span> / 10</p>
+                    </div>
+                    <i class="fa-solid fa-graduation-cap text-5xl text-gray-200"></i>
+                </div>
+            </div>
+
+            <div class="glass-panel p-6 rounded-xl">
+                <h3 class="text-xl font-bold mb-4 border-b border-white/20 pb-2"><i class="fa-solid fa-bell text-accent mr-2"></i>최근 공지사항</h3>
+                <ul class="space-y-3">
+                    <li class="flex gap-4 items-center bg-white/10 p-3 rounded">
+                        <span class="bg-red-500 text-white text-xs px-2 py-1 rounded font-bold">긴급</span>
+                        <span>자전거 보관소 앞 가로등 수리 완료 (학생 제보)</span>
+                    </li>
+                    <li class="flex gap-4 items-center bg-white/10 p-3 rounded">
+                        <span class="bg-primary text-white text-xs px-2 py-1 rounded font-bold">안내</span>
+                        <span>새로운 교육 자료 '저작권 보호'가 추가되었습니다. 퀴즈를 풀고 토큰을 받으세요!</span>
+                    </li>
+                    <li class="flex gap-4 items-center bg-white/10 p-3 rounded">
+                        <span class="bg-secondary text-white text-xs px-2 py-1 rounded font-bold">이벤트</span>
+                        <span>급식 잔반 제로 챌린지 이번주 토큰 2배 지급!</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="view-report" class="view-section hidden animate-fade-in">
+            <h2 class="text-3xl font-bold mb-6 text-white"><i class="fa-solid fa-bullhorn mr-3"></i>불편사항 & 건의 신고</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="glass-card p-6">
+                    <h3 class="text-xl font-bold mb-4 text-primary border-b pb-2">신고서 작성 (토큰 10 지급)</h3>
+                    <form id="report-form" onsubmit="submitReport(event)">
+                        <div class="mb-4">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">위치 (우측 지도 클릭 시 자동 입력)</label>
+                            <input type="text" id="report-location" placeholder="예: 본관 2층 남자화장실 앞" class="w-full p-2 border rounded bg-gray-50 focus:outline-primary" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">위치 (지도 참조)</label>
+                            <input type="text" placeholder="예: 본관 2층 남자화장실 앞" class="w-full p-2 border rounded bg-gray-50 focus:outline-primary" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">상세 내용</label>
+                            <textarea rows="4" placeholder="어떤 점이 불편한지 상세히 적어주세요." class="w-full p-2 border rounded bg-gray-50 focus:outline-primary" required></textarea>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">사진 첨부 (선택)</label>
+                            <input type="file" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-indigo-700">
+                        </div>
+                        <button type="submit" class="w-full bg-primary hover:bg-indigo-700 text-white font-bold py-3 rounded transition shadow-lg">신고/건의 제출하기</button>
+                    </form>
+                </div>
+
+                <div class="glass-card p-6 flex flex-col">
+                    <h3 class="text-xl font-bold mb-4 text-primary border-b pb-2">대화형 학교 안내도</h3>
+                    <p class="text-sm text-gray-600 mb-4">지도에서 문제가 있는 구역을 클릭하면 위치가 자동으로 입력됩니다.</p>
+                    <div class="flex-1 bg-green-50 rounded-lg border-2 border-green-200 p-3 grid grid-cols-4 grid-rows-4 gap-2 relative">
+                        <button type="button" onclick="selectLocation('운동장', this)" class="col-span-2 row-span-2 bg-green-200/80 hover:bg-green-300 rounded-lg flex flex-col items-center justify-center text-green-800 font-bold transition shadow-sm border border-green-300">
+                            <i class="fa-solid fa-futbol text-2xl mb-1"></i>운동장
+                        </button>
+                        <button type="button" onclick="selectLocation('신관', this)" class="col-span-2 bg-blue-100 hover:bg-blue-200 rounded-lg flex flex-col items-center justify-center text-blue-800 font-bold transition shadow-sm border border-blue-300">
+                            <i class="fa-solid fa-building text-xl mb-1"></i>신관
+                        </button>
+                        <button type="button" onclick="selectLocation('체육관', this)" class="row-span-2 bg-orange-100 hover:bg-orange-200 rounded-lg flex flex-col items-center justify-center text-orange-800 font-bold transition shadow-sm border border-orange-300">
+                            <i class="fa-solid fa-dumbbell text-xl mb-1"></i>체육관
+                        </button>
+                        <button type="button" onclick="selectLocation('본관', this)" class="col-span-3 row-span-2 bg-blue-200 hover:bg-blue-300 rounded-lg flex flex-col items-center justify-center text-blue-900 font-bold transition shadow-sm border border-blue-400">
+                            <i class="fa-solid fa-school text-3xl mb-1"></i>본관
+                        </button>
+                        <button type="button" onclick="selectLocation('급식실', this)" class="col-span-2 bg-yellow-100 hover:bg-yellow-200 rounded-lg flex items-center justify-center gap-2 text-yellow-800 font-bold transition shadow-sm border border-yellow-300">
+                            <i class="fa-solid fa-utensils"></i>급식실
+                        </button>
+                        <button type="button" onclick="selectLocation('분리수거장', this)" class="bg-gray-200 hover:bg-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-700 font-bold text-xs transition shadow-sm border border-gray-400">
+                            <i class="fa-solid fa-recycle text-lg mb-1"></i>분리수거장
+                        </button>
+                        
+                        <!-- 현재 선택 표시 핀 -->
+                        <i id="map-pin" class="fa-solid fa-location-dot absolute text-red-500 text-3xl pointer-events-none transition-all duration-300 opacity-0" style="transform: translate(-50%, -100%);"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-calendar" class="view-section hidden animate-fade-in">
+            <h2 class="text-3xl font-bold mb-6 text-white"><i class="fa-solid fa-calendar-days mr-3"></i>학교 연계 프로젝트 캘린더</h2>
+            
+            <div class="glass-card p-6 max-w-4xl mx-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <button class="p-2 bg-gray-100 rounded hover:bg-gray-200"><i class="fa-solid fa-chevron-left"></i></button>
+                    <h3 class="text-2xl font-bold text-gray-800">2026년 9월</h3>
+                    <button class="p-2 bg-gray-100 rounded hover:bg-gray-200"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+                
+                <div class="grid grid-cols-7 gap-2 mb-2 text-center font-bold text-gray-600 text-sm">
+                    <div class="text-red-500">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div class="text-blue-500">토</div>
+                </div>
+                
+                <div class="calendar-grid" id="calendar-body">
+                    <!-- JS로 동적 생성 -->
+                </div>
+
+                <div class="mt-6 border-t pt-4">
+                    <h4 class="font-bold text-lg mb-2">이번 달 주요 프로젝트</h4>
+                    <ul class="space-y-2">
+                        <li class="flex items-center gap-3 text-sm"><span class="w-3 h-3 rounded-full bg-accent"></span> 9월 10일 : 전교생 분리수거 아이디어 공모전</li>
+                        <li class="flex items-center gap-3 text-sm"><span class="w-3 h-3 rounded-full bg-accent"></span> 9월 15일 : 학교 폭력 예방 캠페인 및 표어 발표</li>
+                        <li class="flex items-center gap-3 text-sm"><span class="w-3 h-3 rounded-full bg-accent"></span> 9월 25일 : 교내 동아리 연합 발표회 (체육관)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-edu" class="view-section hidden animate-fade-in">
+            <div class="flex justify-between items-end mb-6">
+                <h2 class="text-3xl font-bold text-white"><i class="fa-solid fa-book-open mr-3"></i>교육 자료 & 퀴즈</h2>
+                <p class="text-white/80 font-bold bg-black/40 px-3 py-1 rounded">정답시 과목당 <span class="text-accent">20 토큰</span> 지급</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="edu-grid">
+                <!-- JS에서 데이터 기반 렌더링 -->
+            </div>
+        </div>
+
+        <div id="view-meal" class="view-section hidden animate-fade-in">
+            <h2 class="text-3xl font-bold mb-6 text-white"><i class="fa-solid fa-utensils mr-3"></i>급식 잔반 제로 챌린지</h2>
+            
+            <div class="glass-card p-8 max-w-2xl mx-auto text-center">
+                <img src="https://images.unsplash.com/photo-1628191137573-dee64e727cb1?q=80&w=2000&auto=format&fit=crop" alt="급식판" class="w-full h-64 object-cover rounded-xl mb-6 shadow-md">
+                
+                <h3 class="text-2xl font-black text-gray-800 mb-2">잔반 없는 빈 식판을 인증해주세요!</h3>
+                <p class="text-gray-600 mb-6">환경도 보호하고, 학교 음식물 쓰레기 처리 비용도 절약하며, <strong>토큰(30개)</strong>도 받을 수 있는 1석 3조의 챌린지입니다.</p>
+                
+                <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-8 relative hover:bg-gray-100 transition cursor-pointer" onclick="document.getElementById('meal-upload').click()">
+                    <i class="fa-solid fa-camera text-5xl text-gray-400 mb-3"></i>
+                    <p class="text-gray-500 font-bold">여기를 눌러 점심 식판 사진 촬영 / 업로드</p>
+                    <input type="file" id="meal-upload" accept="image/*" capture="environment" class="hidden" onchange="handleMealUpload(this)">
+                </div>
+
+                <div id="meal-success" class="hidden mt-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
+                    <strong class="font-bold">인증 완료!</strong>
+                    <span class="block sm:inline"> 지구를 지켜주셔서 감사합니다. 30 토큰이 지급되었습니다! (내일 다시 참여 가능)</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-pokedex" class="view-section hidden animate-fade-in">
+            <div class="flex justify-between items-end mb-6">
+                <div>
+                    <h2 class="text-3xl font-bold text-white"><i class="fa-solid fa-magnifying-glass-location mr-3"></i>분실물 도감 (Pokedex)</h2>
+                    <p class="text-white/80 mt-2">자주 잃어버리는 물건을 찾아주면 도감이 채워집니다. <br>사진을 찍어 제보해주세요! 모두 채우면 <strong class="text-accent text-lg">500 토큰</strong> 보너스!</p>
+                </div>
+                <div class="bg-black/50 p-4 rounded-lg text-center border border-white/20">
+                    <p class="text-sm text-gray-300">현재 달성률</p>
+                    <p class="text-3xl font-bold text-accent"><span id="pokedex-count-display">0</span> <span class="text-lg text-white">/ 8</span></p>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="pokedex-grid">
+                <!-- JS에서 렌더링 -->
+            </div>
+        </div>
+
+        <div id="view-market" class="view-section hidden animate-fade-in">
+            <div class="flex justify-between items-center mb-6 bg-black/40 p-4 rounded-xl backdrop-blur-sm border border-white/10">
+                <h2 class="text-3xl font-bold text-white"><i class="fa-solid fa-store mr-3"></i>학교 토큰 상점</h2>
+                <div class="text-right">
+                    <p class="text-gray-300 text-sm">보유 토큰</p>
+                    <p class="text-3xl font-black text-accent"><i class="fa-solid fa-coins mr-2"></i><span id="market-tokens">150</span></p>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="market-grid">
+                <!-- JS에서 렌더링 -->
+            </div>
+        </div>
+
+        <div id="view-ranking" class="view-section hidden animate-fade-in">
+            <h2 class="text-3xl font-bold mb-2 text-white"><i class="fa-solid fa-trophy text-yellow-400 mr-3"></i>토큰 랭킹 현황</h2>
+            <p class="text-white/90 mb-6 font-bold bg-red-500/80 inline-block px-4 py-2 rounded-full shadow-lg">
+                🔥 목표: 학기말 각 학년 1위 반 전원 <strong class="text-yellow-200">야구장 직관 티켓</strong> 증정! 🔥
+            </p>
+            
+            <div class="glass-card p-6 h-[500px] flex flex-col relative">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-800" id="chart-title">전체 학년 토큰 랭킹</h3>
+                        <p class="text-sm text-gray-500">그래프의 막대를 클릭하면 하위 랭킹(반별 -> 학생별)을 볼 수 있습니다.</p>
+                    </div>
+                    <button id="chart-back-btn" class="hidden bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded font-bold transition" onclick="goUpChartLevel()">
+                        <i class="fa-solid fa-arrow-left mr-2"></i>상위 랭킹으로
+                    </button>
+                </div>
+                
+                <div class="flex-1 relative w-full">
+                    <canvas id="rankingChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 교육 자료 모달 -->
+    <div id="edu-modal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto flex flex-col">
+            <div class="p-4 border-b flex justify-between items-center sticky top-0 bg-white z-10">
+                <h3 class="text-xl font-bold" id="modal-edu-title">제목</h3>
+                <button onclick="closeEduModal()" class="text-gray-500 hover:text-red-500 text-2xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-6">
+                <div class="relative w-full aspect-video mb-6 rounded-lg overflow-hidden bg-gray-900 shadow-inner">
+                    <iframe id="modal-edu-video" class="absolute top-0 left-0 w-full h-full" src="" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+                
+                <div class="text-gray-700 leading-relaxed space-y-4" id="modal-edu-content">
+                    내용
+                </div>
+                <p class="text-sm font-bold text-gray-500 mt-6 border-t pt-2" id="modal-edu-source">
+                    <i class="fa-brands fa-youtube text-red-500 mr-1"></i> 출처: 
+                </p>
+                
+                <div id="quiz-section" class="mt-8 bg-indigo-50 p-6 rounded-xl border border-indigo-100 hidden">
+                    <h4 class="font-bold text-primary mb-4 text-lg"><i class="fa-solid fa-circle-question mr-2"></i>학습 확인 퀴즈</h4>
+                    <p class="font-bold mb-4 text-gray-800" id="quiz-question">질문</p>
+                    <div class="space-y-2" id="quiz-options">
+                        <!-- 옵션 렌더링 -->
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 border-t flex justify-end bg-gray-50 rounded-b-xl sticky bottom-0">
+                <button id="start-quiz-btn" class="bg-primary hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded transition">퀴즈 풀기 (20토큰)</button>
             </div>
         </div>
     </div>
 
-    <div class="max-w-4xl mx-auto pt-6 px-4 pb-20">
-        
-        <!-- Header -->
-        <header class="glass-panel rounded-2xl p-6 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-4 text-center sm:text-left">
-                <div class="bg-blue-600 text-white w-14 h-14 flex items-center justify-center rounded-2xl shadow-lg transform rotate-3">
-                    <i class="fas fa-school text-2xl"></i>
+    <!-- 사진 촬영/업로드 모달 (분실물 도감용) -->
+    <div id="camera-modal" class="fixed inset-0 bg-black/90 z-50 hidden flex flex-col items-center justify-center p-4">
+        <div class="bg-white p-6 rounded-xl w-full max-w-sm text-center">
+            <h3 class="text-xl font-bold mb-2">분실물 습득 등록</h3>
+            <p class="text-gray-600 mb-6"><strong class="text-primary" id="camera-item-name">아이템</strong>을 찾으셨나요?<br>사진을 찍어 학교에 제보해주세요!</p>
+            
+            <div class="w-full aspect-square bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center mb-6 relative hover:bg-gray-200 cursor-pointer" onclick="document.getElementById('pokedex-upload').click()">
+                <div class="text-center">
+                    <i class="fa-solid fa-camera text-4xl text-gray-400 mb-2"></i>
+                    <p class="text-sm font-bold text-gray-500">사진 찍기 / 업로드</p>
                 </div>
-                <div>
-                    <h1 class="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">우리가 발전 시키는 학교</h1>
-                    <p class="text-sm text-gray-600 mt-1 font-medium">학생 참여형 학교생활 개선 프로젝트</p>
-                </div>
+                <input type="file" id="pokedex-upload" accept="image/*" capture="environment" class="hidden" onchange="handlePokedexUpload(this)">
             </div>
             
-            <div class="bg-yellow-100 border-2 border-yellow-400 text-yellow-800 px-5 py-3 rounded-xl flex items-center gap-3 shadow-sm cursor-pointer hover:bg-yellow-200 transition" onclick="switchView('market')">
-                <i class="fas fa-coins text-2xl text-yellow-500"></i>
-                <div class="text-right">
-                    <div class="text-xs font-bold text-yellow-600">내 토큰</div>
-                    <div class="text-xl font-black" id="user-tokens-display">0</div>
-                </div>
-            </div>
-        </header>
-
-        <!-- Navigation -->
-        <nav class="flex overflow-x-auto gap-2 mb-6 pb-2 no-scrollbar">
-            <button onclick="switchView('home')" class="nav-btn active flex-shrink-0 px-4 py-2 rounded-full border border-gray-300 bg-white/80 hover:bg-white text-sm font-bold transition shadow-sm"><i class="fas fa-home mr-1"></i> 홈</button>
-            <button onclick="switchView('report')" class="nav-btn flex-shrink-0 px-4 py-2 rounded-full border border-gray-300 bg-white/80 hover:bg-white text-sm font-bold transition shadow-sm"><i class="fas fa-bullhorn mr-1"></i> 신고&건의</button>
-            <button onclick="switchView('zerowaste')" class="nav-btn flex-shrink-0 px-4 py-2 rounded-full border border-gray-300 bg-white/80 hover:bg-white text-sm font-bold transition shadow-sm"><i class="fas fa-utensils mr-1"></i> 급식 인증</button>
-            <button onclick="switchView('edu')" class="nav-btn flex-shrink-0 px-4 py-2 rounded-full border border-gray-300 bg-white/80 hover:bg-white text-sm font-bold transition shadow-sm"><i class="fas fa-book-open mr-1"></i> 교육&퀴즈</button>
-            <button onclick="switchView('pokedex')" class="nav-btn flex-shrink-0 px-4 py-2 rounded-full border border-gray-300 bg-white/80 hover:bg-white text-sm font-bold transition shadow-sm"><i class="fas fa-search mr-1"></i> 분실물 도감</button>
-            <button onclick="switchView('calendar')" class="nav-btn flex-shrink-0 px-4 py-2 rounded-full border border-gray-300 bg-white/80 hover:bg-white text-sm font-bold transition shadow-sm"><i class="far fa-calendar-alt mr-1"></i> 학교 캘린더</button>
-            <button onclick="switchView('map')" class="nav-btn flex-shrink-0 px-4 py-2 rounded-full border border-gray-300 bg-white/80 hover:bg-white text-sm font-bold transition shadow-sm"><i class="fas fa-map-marked-alt mr-1"></i> 학교 지도</button>
-            <button onclick="switchView('ranking')" class="nav-btn flex-shrink-0 px-4 py-2 rounded-full border border-gray-300 bg-white/80 hover:bg-white text-sm font-bold transition shadow-sm text-purple-700 border-purple-200"><i class="fas fa-trophy mr-1"></i> 랭킹 (야구장 이벤트)</button>
-            <button onclick="switchView('market')" class="nav-btn flex-shrink-0 px-4 py-2 rounded-full border border-gray-300 bg-white/80 hover:bg-white text-sm font-bold transition shadow-sm text-yellow-600 border-yellow-200"><i class="fas fa-store mr-1"></i> 마켓</button>
-        </nav>
-
-        <main>
-            <section id="view-home" class="view-section active">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="glass-panel rounded-2xl p-6">
-                        <h2 class="text-xl font-bold mb-4 border-b pb-2"><i class="fas fa-star text-yellow-500 mr-2"></i>최근 소식</h2>
-                        <ul class="space-y-3 text-sm text-gray-700">
-                            <li class="flex items-center gap-2"><span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-bold">필독</span> 이번 학기 토큰 1위 학급은 <strong>야구장 관람</strong> 혜택!</li>
-                            <li class="flex items-center gap-2"><span class="bg-blue-100 text-blue-600 px-2 py-1 rounded text-xs font-bold">안내</span> 분실물 도감이 업데이트 되었습니다.</li>
-                            <li class="flex items-center gap-2"><span class="bg-green-100 text-green-600 px-2 py-1 rounded text-xs font-bold">이벤트</span> 점심시간 잔반 Zero 인증 시 20토큰 지급!</li>
-                        </ul>
-                        <img src="https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&q=80&w=600" alt="학생들" class="mt-4 rounded-xl shadow-md w-full h-40 object-cover">
-                    </div>
-                    
-                    <div class="glass-panel rounded-2xl p-6 flex flex-col justify-center items-center text-center">
-                        <div class="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mb-4 text-blue-600 text-4xl shadow-inner">
-                            <i class="fas fa-user-graduate"></i>
-                        </div>
-                        <h3 class="text-lg font-bold">2학년 3반 김학생</h3>
-                        <p class="text-sm text-gray-500 mb-4">현재 랭킹: 반내 5위</p>
-                        <button onclick="switchView('ranking')" class="w-full bg-gray-900 text-white font-bold py-3 rounded-xl hover:bg-gray-800 transition">내 랭킹 자세히 보기</button>
-                    </div>
-                </div>
-            </section>
-
-            <section id="view-report" class="view-section">
-                <div class="glass-panel rounded-2xl p-6 md:p-8">
-                    <h2 class="text-2xl font-bold mb-2"><i class="fas fa-bullhorn text-red-500 mr-2"></i>불편사항 & 건의 신고</h2>
-                    <p class="text-sm text-gray-500 mb-6">학교생활 중 겪은 어려움이나 개선 아이디어를 남겨주세요. (제출 시 10토큰 지급)</p>
-                    
-                    <form id="report-form" onsubmit="handleReportSubmit(event)" class="space-y-5">
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">카테고리</label>
-                            <select id="report-category" class="w-full border border-gray-300 rounded-xl px-4 py-3 bg-white/90 focus:ring-2 focus:ring-blue-500 outline-none">
-                                <option>급식 문제</option>
-                                <option>시간표/수업</option>
-                                <option>동아리 활동</option>
-                                <option>청소/위생 (화장실 등)</option>
-                                <option>교우 관계/학교폭력</option>
-                                <option>기타 시설 파손</option>
-                            </select>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">상세 내용</label>
-                            <textarea id="report-desc" rows="4" placeholder="어떤 문제가 있나요? 학교 지도를 참고하여 위치를 설명해주시면 더 좋습니다." class="w-full border border-gray-300 rounded-xl px-4 py-3 bg-white/90 focus:ring-2 focus:ring-blue-500 outline-none" required></textarea>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">사진 첨부 (선택)</label>
-                            <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:bg-gray-50 transition cursor-pointer bg-white/80">
-                                <i class="fas fa-camera text-3xl text-gray-400 mb-2"></i>
-                                <p class="text-sm text-gray-500">클릭하여 사진을 업로드하세요</p>
-                                <input type="file" class="hidden">
-                            </div>
-                        </div>
-                        
-                        <div class="flex gap-2">
-                            <button type="button" onclick="switchView('map')" class="flex-1 bg-teal-100 text-teal-700 font-bold py-3 rounded-xl hover:bg-teal-200 transition"><i class="fas fa-map mr-1"></i> 지도 보기</button>
-                            <button type="submit" class="flex-[2] bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition shadow-md">신고/건의 제출하기</button>
-                        </div>
-                    </form>
-                </div>
-            </section>
-
-            <section id="view-zerowaste" class="view-section">
-                <div class="glass-panel rounded-2xl p-6 text-center">
-                    <h2 class="text-2xl font-bold mb-2"><i class="fas fa-leaf text-green-500 mr-2"></i>잔반 Zero 캠페인</h2>
-                    <p class="text-sm text-gray-600 mb-6">다 먹은 급식판을 촬영하여 인증하면 환경도 보호하고 <strong class="text-green-600">20토큰</strong>도 받아요!</p>
-                    
-                    <div id="camera-view" class="relative w-full max-w-md mx-auto aspect-video bg-gray-900 rounded-2xl overflow-hidden shadow-inner flex items-center justify-center">
-                        <i class="fas fa-utensils text-gray-600 text-6xl"></i>
-                        <div class="absolute inset-0 border-4 border-dashed border-white/30 m-4 rounded-xl pointer-events-none"></div>
-                        <div id="scan-line" class="absolute left-0 right-0 h-1 bg-green-500 hidden top-0 shadow-[0_0_15px_rgba(34,197,94,1)]"></div>
-                    </div>
-                    
-                    <button id="btn-capture" onclick="simulateZeroWasteCapture()" class="mt-8 bg-green-500 text-white text-lg font-bold py-4 px-12 rounded-full shadow-lg hover:bg-green-600 transition hover:-translate-y-1">
-                        <i class="fas fa-camera mr-2"></i> 촬영하기
-                    </button>
-                </div>
-            </section>
-
-            <section id="view-edu" class="view-section">
-                <div class="glass-panel rounded-2xl p-6">
-                    <h2 class="text-2xl font-bold mb-2"><i class="fas fa-laptop-code text-indigo-500 mr-2"></i>교육 자료실 & 퀴즈</h2>
-                    <p class="text-sm text-gray-600 mb-6">자료를 학습하고 퀴즈를 맞히면 자료당 <strong>10토큰</strong>을 드립니다!</p>
-                    
-                    <div id="edu-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <!-- Rendered by JS -->
-                    </div>
-                </div>
-            </section>
-
-            <section id="view-pokedex" class="view-section">
-                <div class="glass-panel rounded-2xl p-6 text-center">
-                    <h2 class="text-2xl font-bold mb-2"><i class="fas fa-book text-amber-700 mr-2"></i>분실물 찾아주기 도감</h2>
-                    <p class="text-sm text-gray-600 mb-2">학생들이 자주 잃어버리는 물건을 주워서 주인에게 찾아주면 도감이 채워집니다.</p>
-                    <p class="text-xs text-red-500 font-bold mb-6">모든 도감을 채우면 무려 500토큰 지급! (회색 아이콘을 클릭하여 수집해보세요)</p>
-                    
-                    <div class="flex justify-between items-center bg-amber-50 rounded-xl p-4 mb-6 border border-amber-200">
-                        <div class="text-amber-800 font-bold">수집률</div>
-                        <div class="text-2xl font-black text-amber-600"><span id="pokedex-count">0</span> / 6</div>
-                    </div>
-
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8" id="pokedex-grid">
-                        <!-- Items -->
-                        <div class="pokedex-item flex flex-col items-center justify-center p-4 bg-gray-100 rounded-xl border-2 border-gray-200 cursor-pointer hover:shadow-md transition" id="dex-1" onclick="collectLostItem(1)">
-                            <i class="fas fa-tshirt text-4xl text-gray-300 mb-2 dex-icon"></i>
-                            <span class="text-sm font-bold text-gray-400 dex-name">체육복</span>
-                        </div>
-                        <div class="pokedex-item flex flex-col items-center justify-center p-4 bg-gray-100 rounded-xl border-2 border-gray-200 cursor-pointer hover:shadow-md transition" id="dex-2" onclick="collectLostItem(2)">
-                            <i class="fas fa-umbrella text-4xl text-gray-300 mb-2 dex-icon"></i>
-                            <span class="text-sm font-bold text-gray-400 dex-name">우산</span>
-                        </div>
-                        <div class="pokedex-item flex flex-col items-center justify-center p-4 bg-gray-100 rounded-xl border-2 border-gray-200 cursor-pointer hover:shadow-md transition" id="dex-3" onclick="collectLostItem(3)">
-                            <i class="fas fa-headphones text-4xl text-gray-300 mb-2 dex-icon"></i>
-                            <span class="text-sm font-bold text-gray-400 dex-name">무선 이어폰</span>
-                        </div>
-                        <div class="pokedex-item flex flex-col items-center justify-center p-4 bg-gray-100 rounded-xl border-2 border-gray-200 cursor-pointer hover:shadow-md transition" id="dex-4" onclick="collectLostItem(4)">
-                            <i class="fas fa-id-card text-4xl text-gray-300 mb-2 dex-icon"></i>
-                            <span class="text-sm font-bold text-gray-400 dex-name">학생증</span>
-                        </div>
-                        <div class="pokedex-item flex flex-col items-center justify-center p-4 bg-gray-100 rounded-xl border-2 border-gray-200 cursor-pointer hover:shadow-md transition" id="dex-5" onclick="collectLostItem(5)">
-                            <i class="fas fa-glasses text-4xl text-gray-300 mb-2 dex-icon"></i>
-                            <span class="text-sm font-bold text-gray-400 dex-name">안경</span>
-                        </div>
-                        <div class="pokedex-item flex flex-col items-center justify-center p-4 bg-gray-100 rounded-xl border-2 border-gray-200 cursor-pointer hover:shadow-md transition" id="dex-6" onclick="collectLostItem(6)">
-                            <i class="fas fa-mug-hot text-4xl text-gray-300 mb-2 dex-icon"></i>
-                            <span class="text-sm font-bold text-gray-400 dex-name">텀블러</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section id="view-ranking" class="view-section">
-                <div class="glass-panel rounded-2xl p-6">
-                    <div class="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-6 text-white mb-6 text-center shadow-lg relative overflow-hidden">
-                        <i class="fas fa-baseball-ball absolute opacity-20 text-9xl -right-4 -bottom-4"></i>
-                        <h2 class="text-2xl md:text-3xl font-black mb-2 relative z-10">🎉 학기말 토큰 레이스 🎉</h2>
-                        <p class="text-sm md:text-base font-medium relative z-10">각 학년에서 토큰을 가장 많이 모은 <strong>1위 학급 전원</strong>에게<br>야구장 단체 관람 티켓을 쏩니다!</p>
-                    </div>
-
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 id="chart-title" class="text-xl font-bold">전체 학년 랭킹</h3>
-                        <button id="chart-back-btn" class="hidden px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm font-bold hover:bg-gray-300" onclick="goUpRankingLevel()">
-                            <i class="fas fa-arrow-left mr-1"></i> 상위 보기
-                        </button>
-                    </div>
-                    
-                    <p class="text-xs text-gray-500 mb-4">* 그래프의 막대를 클릭하면 하위 랭킹(반별 -> 학생별)을 볼 수 있습니다.</p>
-
-                    <div class="relative h-[300px] w-full">
-                        <canvas id="rankingChart"></canvas>
-                    </div>
-                </div>
-            </section>
-
-            <section id="view-market" class="view-section">
-                <div class="glass-panel rounded-2xl p-6">
-                    <div class="flex justify-between items-end border-b pb-4 mb-6">
-                        <div>
-                            <h2 class="text-2xl font-bold"><i class="fas fa-store text-yellow-500 mr-2"></i>토큰 마켓</h2>
-                            <p class="text-sm text-gray-600 mt-1">모은 토큰으로 다양한 혜택을 누리세요!</p>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-xs font-bold text-gray-500">내 토큰</div>
-                            <div class="text-2xl font-black text-yellow-600" id="market-tokens-display">0</div>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6" id="market-grid">
-                        <!-- Market items generated by JS -->
-                    </div>
-                </div>
-            </section>
-
-        </main>
+            <button onclick="closeCameraModal()" class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 rounded">취소</button>
+        </div>
     </div>
 
     <script>
-        // State
-        let currentTokens = 150;
-        let unlockedPokedex = [];
-        const MAX_POKEDEX = 6;
-        
-        // Update Token Displays
-        function updateTokenDisplay() {
-            document.getElementById('user-tokens-display').innerText = currentTokens.toLocaleString();
-            document.getElementById('market-tokens-display').innerText = currentTokens.toLocaleString();
+        // 글로벌 상태
+        let userTokens = 150;
+        let completedQuizzes = [];
+        let currentChartLevel = 'grade'; // 'grade', 'class', 'student'
+        let selectedGrade = null;
+        let selectedClass = null;
+        let rankingChartInstance = null;
+        let currentActiveEduId = null;
+
+        // 분실물 도감 데이터
+        const pokedexData = [
+            { id: 'p1', name: '체육복 (겉옷)', icon: 'fa-shirt', tokens: 30, found: false },
+            { id: 'p2', name: '안경/안경집', icon: 'fa-glasses', tokens: 30, found: false },
+            { id: 'p3', name: '지갑/카드', icon: 'fa-wallet', tokens: 30, found: false },
+            { id: 'p4', name: '학생증', icon: 'fa-id-card', tokens: 30, found: false },
+            { id: 'p5', name: '필통', icon: 'fa-pen-ruler', tokens: 30, found: false },
+            { id: 'p6', name: '우산', icon: 'fa-umbrella', tokens: 30, found: false },
+            { id: 'p7', name: '무선 이어폰', icon: 'fa-headphones-simple', tokens: 30, found: false },
+            { id: 'p8', name: '텀블러', icon: 'fa-mug-hot', tokens: 30, found: false }
+        ];
+
+        // 교육 자료 데이터 (10개)
+        const eduMaterials = [
+            {
+                id: 1, title: '학교 폭력 예방의 첫걸음', category: '인성/교우', 
+                img: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?q=80&w=2070&auto=format&fit=crop',
+                youtubeId: '9etJ6vHuJC4',
+                source: '인천광역시교육청 - [학교폭력 예방 생각영상] 외면하세요',
+                content: '학교 폭력은 신체적, 언어적, 정신적 피해를 주는 모든 행동을 포함합니다. 장난이라도 상대방이 고통을 느낀다면 폭력입니다. 방관하지 않고 적극적으로 신고하거나 선생님께 도움을 요청하는 것이 중요합니다.',
+                question: '다음 중 학교 폭력에 대처하는 올바른 자세는 무엇일까요?',
+                options: ['나와 상관없으니 무시한다.', '피해자를 같이 놀린다.', '선생님이나 학교폭력 신고센터(117)에 알린다.', '가해자에게 똑같이 복수한다.'],
+                answer: 2
+            },
+            {
+                id: 2, title: '올바른 사이버 예절 (네티켓)', category: '디지털 시민의식', 
+                img: 'https://images.unsplash.com/photo-1614064641913-6b22b27072bc?q=80&w=2070&auto=format&fit=crop',
+                youtubeId: 'SdP-Fy4mqAE',
+                source: '경기도교육청TV - 디지털 시민교육 미디어 예절',
+                content: '사이버 공간에서도 현실과 똑같이 예의를 지켜야 합니다. 익명성에 숨어 악성 댓글을 달거나, 타인의 개인정보를 함부로 공유하는 행위는 심각한 범죄가 될 수 있습니다. 항상 상대방을 존중하는 언어를 사용합시다.',
+                question: '사이버 공간에서 지켜야 할 예절로 알맞지 않은 것은?',
+                options: ['출처가 불분명한 파일은 다운로드하지 않는다.', '친구의 재미있는 엽기 사진은 동의 없이 단톡방에 올려도 된다.', '비속어나 줄임말 대신 바른말을 사용한다.', '상대방의 의견을 존중하고 다름을 인정한다.'],
+                answer: 1
+            },
+            {
+                id: 3, title: '지구를 살리는 분리수거', category: '환경 보호', 
+                img: 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?q=80&w=2070&auto=format&fit=crop',
+                youtubeId: 'n3ixx8GBlfA',
+                source: '전북유아교육진흥원 - 올바른 재활용 분리배출',
+                content: '플라스틱, 종이, 유리, 캔 등은 내용물을 비우고 깨끗이 씻어서 배출해야 합니다. 라벨이나 테이프 등 다른 재질은 반드시 제거해야 재활용이 가능합니다. 교실에서도 철저한 분리수거가 필요합니다.',
+                question: '페트병을 분리수거 할 때 가장 올바른 방법은?',
+                options: ['음료수가 남은 채로 플라스틱 수거함에 넣는다.', '내용물을 비우고 라벨을 뗀 후 압착하여 버린다.', '종이컵과 함께 모아서 버린다.', '투명 페트병과 유색 페트병을 섞어서 버린다.'],
+                answer: 1
+            },
+            {
+                id: 4, title: '청소년기의 올바른 식습관', category: '건강', 
+                img: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=2053&auto=format&fit=crop',
+                youtubeId: 'yZ-Rsgo7zVw',
+                source: '식품의약품안전처 - 청소년 건강한 식생활 가이드',
+                content: '성장기 청소년에게는 균형 잡힌 영양 섭취가 필수입니다. 아침 식사를 거르지 않고, 패스트푸드나 탄산음료 섭취를 줄이며 채소와 과일을 충분히 먹는 습관이 평생 건강을 좌우합니다.',
+                question: '청소년의 올바른 식습관에 대한 설명으로 틀린 것은?',
+                options: ['아침 식사는 두뇌 활동을 돕기 위해 꼭 먹는다.', '수분 섭취를 위해 물 대신 탄산음료를 많이 마신다.', '음식은 천천히 꼭꼭 씹어 먹는다.', '편식하지 않고 골고루 섭취한다.'],
+                answer: 1
+            },
+            {
+                id: 5, title: '생명을 살리는 4분의 기적, 심폐소생술', category: '안전/응급', 
+                img: 'https://images.unsplash.com/photo-1584820927498-cafe4c143bc5?q=80&w=1974&auto=format&fit=crop',
+                youtubeId: 'hCbqxtdKzwc',
+                source: '질병관리청 - 누구나 따라할 수 있는 심폐소생술',
+                content: '심정지 환자 발생 시 골든타임은 단 4분입니다. 의식을 확인하고 119에 신고한 뒤, 가슴 압박을 실시해야 합니다. 가슴 중앙(흉골 아래쪽 절반)을 5cm 깊이로 분당 100~120회 속도로 강하고 빠르게 압박합니다.',
+                question: '심폐소생술 시 가슴 압박의 올바른 속도는?',
+                options: ['분당 30~50회', '분당 60~80회', '분당 100~120회', '분당 150회 이상'],
+                answer: 2
+            },
+            {
+                id: 6, title: '안전한 등하굣길, 교통 안전 수칙', category: '안전', 
+                img: 'https://images.unsplash.com/photo-1544626053-90d65a2a78ec?q=80&w=2070&auto=format&fit=crop',
+                youtubeId: 'i3JNJXbTGK8',
+                source: '재능중학교 - 슬기로운 청소년 교통안전생활',
+                content: '길을 건널 때는 항상 횡단보도를 이용하고, 신호가 초록불로 바뀌어도 좌우를 살핀 후 건너야 합니다. 특히 걸어가면서 스마트폰을 보거나 이어폰을 꽂고 걷는 것은 큰 사고로 이어질 수 있으므로 절대 금물입니다.',
+                question: '보행 시 가장 위험한 행동은 무엇인가요?',
+                options: ['초록불이 켜진 후 좌우를 살피고 건넌다.', '스마트폰을 보며 횡단보도를 건넌다.', '야간에는 밝은 색 옷을 입는다.', '무단횡단을 하지 않는다.'],
+                answer: 1
+            },
+            {
+                id: 7, title: '학교 화재 발생 시 대피 요령', category: '재난 대비', 
+                img: 'https://images.unsplash.com/photo-1598284534720-3057fa463321?q=80&w=1968&auto=format&fit=crop',
+                youtubeId: '0VW6wcg2E2Q',
+                source: '경기도교육청TV - 학교에서 불이 나면 어떻게 해야하죠?',
+                content: '학교에서 화재 경보가 울리면 당황하지 않고 선생님의 지시에 따라 신속히 대피합니다. 엘리베이터는 절대 탑승하지 말고 계단을 이용하며, 젖은 수건이나 옷소매로 코와 입을 가리고 자세를 낮춰 이동합니다.',
+                question: '화재 대피 시 올바른 행동 요령이 아닌 것은?',
+                options: ['엘리베이터를 타고 빠르게 1층으로 내려간다.', '젖은 수건으로 코와 입을 가린다.', '자세를 최대한 낮추고 이동한다.', '비상구 유도등을 따라 밖으로 대피한다.'],
+                answer: 0
+            },
+            {
+                id: 8, title: '효율적인 시간 관리와 학습법', category: '학습/자기계발', 
+                img: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=2070&auto=format&fit=crop',
+                youtubeId: 'lnZ4ZY_024Y',
+                source: '뇌과학 학습법 - 시간관리 및 집중 기법',
+                content: '효과적인 학습을 위해서는 구체적이고 실현 가능한 계획을 세워야 합니다. 뽀모도로 기법(25분 집중, 5분 휴식)을 활용하여 집중력을 높이고, 미루는 습관을 없애기 위해 가장 중요한 일부터 먼저 처리하는 연습을 하세요.',
+                question: '뽀모도로 시간 관리 기법의 기본 사이클은?',
+                options: ['1시간 집중, 30분 휴식', '25분 집중, 5분 휴식', '무조건 쉴 틈 없이 공부하기', '10분 집중, 1시간 휴식'],
+                answer: 1
+            },
+            {
+                id: 9, title: '올바른 저작권 보호의 이해', category: '디지털 시민의식', 
+                img: 'https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=2112&auto=format&fit=crop',
+                youtubeId: 'N8Ck_ZqlZWw',
+                source: '서울시교육청 - 알기 쉬운 지식재산권(저작권)',
+                content: '인터넷에 떠도는 사진, 음악, 글 등은 모두 창작자의 저작물입니다. 과제나 발표 자료를 만들 때 타인의 저작물을 사용할 경우 반드시 출처를 명확히 밝혀야 하며, 불법 다운로드나 무단 공유는 저작권 침해 행위입니다.',
+                question: '학교 과제를 할 때 올바른 저작물 이용 방법은?',
+                options: ['인터넷 검색 이미지 중 마음에 드는 것을 그냥 쓴다.', '다른 사람의 글을 내 생각인 것처럼 복사해서 낸다.', '무료 라이선스(CC0 등) 이미지를 찾거나 출처를 명확히 표기한다.', '유료 폰트를 불법으로 다운로드하여 디자인한다.'],
+                answer: 2
+            },
+            {
+                id: 10, title: '감염병 예방을 위한 개인 위생', category: '보건', 
+                img: 'https://images.unsplash.com/photo-1584483766114-2cea6facdf57?q=80&w=2070&auto=format&fit=crop',
+                youtubeId: '5_jHlU0oR3Q',
+                source: '질병관리청 - 올바른 손씻기 6단계',
+                content: '감기, 독감 등 다양한 감염병을 예방하는 가장 쉽고 확실한 방법은 올바른 손씻기입니다. 흐르는 물에 비누를 사용하여 30초 이상 꼼꼼히 씻어야 하며, 기침할 때는 옷소매로 입과 코를 가리는 기침 예절을 지켜야 합니다.',
+                question: '올바른 손씻기 방법으로 가장 적절한 것은?',
+                options: ['물로만 대충 5초간 씻는다.', '손바닥만 비누로 씻는다.', '흐르는 물에 비누로 30초 이상 손등, 손가락 사이까지 씻는다.', '손을 씻지 않고 손수건으로 닦기만 한다.'],
+                answer: 2
+            }
+        ];
+
+        // 상점 데이터
+        const marketItems = [
+            { id: 'm1', name: '학교 매점 3,000원 이용권', price: 300, img: 'https://images.unsplash.com/photo-1621939514649-280e2ee25f60?q=80&w=2070&auto=format&fit=crop', desc: '쉬는시간에 자유롭게 사용 가능한 매점 쿠폰' },
+            { id: 'm2', name: '학생 봉사시간 1시간 인정', price: 500, img: 'https://images.unsplash.com/photo-1593113589914-07553f1ca8bc?q=80&w=2070&auto=format&fit=crop', desc: '학교 공식 봉사시간 1시간으로 전환 (학기당 최대 2회)' },
+            { id: 'm3', name: '점심 급식 배식 1순위권 (반 전체)', price: 1000, img: 'https://images.unsplash.com/photo-1588683525281-9b486927cb09?q=80&w=2070&auto=format&fit=crop', desc: '반 친구들 모두가 가장 먼저 밥을 먹을 수 있는 권리!' },
+            { id: 'm4', name: '희망 짝꿍 지정권 (1개월)', price: 200, img: 'https://images.unsplash.com/photo-1529156069898-49953eb1b5ae?q=80&w=2070&auto=format&fit=crop', desc: '다음 달 자리 배치 시 원하는 친구와 짝꿍 지정 가능' },
+            { id: 'm5', name: '체육복 등교 1일 허용권', price: 150, img: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?q=80&w=1972&auto=format&fit=crop', desc: '교복 대신 편안한 체육복을 입고 등하교 할 수 있는 패스' },
+            { id: 'm6', name: '교장선생님과의 티타임', price: 50, img: 'https://images.unsplash.com/photo-1525997274092-1c255bc2ccbd?q=80&w=2070&auto=format&fit=crop', desc: '건의사항을 직접 말씀드릴 수 있는 특별한 간담회 참석권' }
+        ];
+
+        // 랭킹 가짜 데이터 (학년 -> 반 -> 학생)
+        const rankingData = {
+            grade: {
+                labels: ['1학년', '2학년', '3학년'],
+                data: [15200, 18450, 12300], // 총 토큰
+                colors: ['#3B82F6', '#10B981', '#F59E0B']
+            },
+            class: {
+                '1학년': { labels: ['1반', '2반', '3반', '4반', '5반'], data: [2500, 3100, 4200, 2100, 3300] },
+                '2학년': { labels: ['1반', '2반', '3반', '4반', '5반'], data: [3200, 4100, 5200, 3800, 2150] }, // 2학년 3반이 1위
+                '3학년': { labels: ['1반', '2반', '3반', '4반', '5반'], data: [2100, 2800, 2900, 1500, 3000] }
+            },
+            student: { // 샘플 데이터로 몇개만 구성
+                '2학년_3반': { labels: ['김학생', '이철수', '박영희', '최민수', '정다은', '기타학생들...'], data: [850, 720, 680, 550, 490, 1910] }
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initCalendar();
+            renderEduCards();
+            renderPokedex();
+            renderMarket();
+            initChart();
+            updateUI();
+        });
+
+        function switchView(viewId) {
+            // Hide all views
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            // Show target view
+            document.getElementById(`view-${viewId}`).classList.remove('hidden');
+            
+            // Update Nav styling
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            // Find the clicked nav and add active class based on onclick attribute
+            document.querySelectorAll('.nav-item').forEach(el => {
+                if(el.getAttribute('onclick').includes(viewId)) {
+                    el.classList.add('active');
+                }
+            });
+
+            // Special actions when entering specific views
+            if (viewId === 'ranking') {
+                if(rankingChartInstance) rankingChartInstance.update();
+            }
         }
 
-        // Custom Modal System
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            document.getElementById('toast-msg').innerText = message;
-            toast.classList.add('show');
+        // 토스트 알림 함수 (alert 대신 사용)
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const bgColor = type === 'success' ? 'bg-green-500' : (type === 'error' ? 'bg-red-500' : 'bg-blue-500');
+            const icon = type === 'success' ? 'fa-check-circle' : (type === 'error' ? 'fa-triangle-exclamation' : 'fa-circle-info');
+            
+            toast.className = `toast-enter ${bgColor} text-white px-4 py-3 rounded shadow-lg flex items-center gap-3 font-bold z-50`;
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+            
             setTimeout(() => {
-                toast.classList.remove('show');
+                toast.classList.replace('toast-enter', 'toast-leave');
+                setTimeout(() => toast.remove(), 300);
             }, 3000);
         }
 
-        function showModal(title, contentHTML, actionsHTML = null) {
-            document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-content').innerHTML = contentHTML;
-            if (actionsHTML) {
-                document.getElementById('modal-actions').innerHTML = actionsHTML;
-            } else {
-                document.getElementById('modal-actions').innerHTML = '<button onclick="closeModal()" class="px-4 py-2 bg-gray-200 text-gray-800 font-bold rounded-lg hover:bg-gray-300 transition">닫기</button>';
-            }
-            document.getElementById('custom-modal').classList.remove('hidden');
-            document.getElementById('custom-modal').classList.add('flex');
-        }
-
-        function closeModal() {
-            document.getElementById('custom-modal').classList.add('hidden');
-            document.getElementById('custom-modal').classList.remove('flex');
-        }
-
         function addTokens(amount, reason) {
-            currentTokens += amount;
-            updateTokenDisplay();
-            showToast(`${amount} 토큰 획득! (${reason})`);
+            userTokens += amount;
+            updateUI();
+            showToast(`${amount} 토큰을 획득했습니다! (${reason})`, 'success');
         }
 
-        function subtractTokens(amount) {
-            if (currentTokens >= amount) {
-                currentTokens -= amount;
-                updateTokenDisplay();
-                return true;
-            }
-            return false;
+        function updateUI() {
+            document.getElementById('user-tokens-display').innerText = userTokens;
+            document.getElementById('market-tokens').innerText = userTokens;
+            document.getElementById('quiz-progress').innerText = completedQuizzes.length;
+            
+            const foundCount = pokedexData.filter(i => i.found).length;
+            document.getElementById('pokedex-progress').innerText = foundCount;
+            document.getElementById('pokedex-count-display').innerText = foundCount;
         }
 
-        // Navigation Logic
-        function switchView(viewId) {
-            // Update buttons
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-            // Find the button that called this (roughly based on onclick text)
-            event.currentTarget.classList.add('active');
-
-            // Update sections
-            document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
-            document.getElementById(`view-${viewId}`).classList.add('active');
-
-            // Specific view inits
-            if (viewId === 'ranking') renderChart();
-        }
-
-        
-        // Report
-        function handleReportSubmit(e) {
+        function submitReport(e) {
             e.preventDefault();
-            const category = document.getElementById('report-category').value;
-            addTokens(10, "신고/건의 접수 완료");
-            showModal("접수 완료", `<p><strong>[${category}]</strong> 관련 내용이 성공적으로 접수되었습니다. 학교를 위해 참여해주셔서 감사합니다!</p>`);
-            document.getElementById('report-form').reset();
-            switchView('home');
+            const form = document.getElementById('report-form');
+            form.reset();
+            addTokens(10, "불편사항/건의 신고");
+            setTimeout(() => switchView('home'), 1500);
         }
 
-        // Zero Waste Camera Simulation
-        function simulateZeroWasteCapture() {
-            const btn = document.getElementById('btn-capture');
-            const scanLine = document.getElementById('scan-line');
-            
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> AI 분석중...';
-            
-            scanLine.classList.remove('hidden');
-            scanLine.style.animation = 'scan 1.5s linear infinite';
-            
-            // Add custom animation for scanline to document
-            const style = document.createElement('style');
-            style.innerHTML = `@keyframes scan { 0% { top: 0%; } 50% { top: 100%; } 100% { top: 0%; } }`;
-            document.head.appendChild(style);
-
-            setTimeout(() => {
-                scanLine.classList.add('hidden');
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-camera mr-2"></i> 촬영하기';
-                
-                showModal("인증 성공!", "<div class='text-center py-4'><i class='fas fa-check-circle text-5xl text-green-500 mb-4'></i><p class='text-lg font-bold'>잔반 없는 급식판이 확인되었습니다.</p><p class='text-sm text-gray-500 mt-2'>환경 보호에 동참해주셔서 감사합니다.</p></div>");
-                addTokens(20, "잔반 Zero 캠페인");
-            }, 2000);
-        }
-
-        // Calendar Builder
-        function buildCalendar() {
-            const grid = document.getElementById('calendar-grid');
+        function initCalendar() {
+            const tbody = document.getElementById('calendar-body');
             let html = '';
-            // August 2026 starts on Saturday. Let's make a mock layout.
-            // 1st is Sat.
-            for (let i = 0; i < 6; i++) { html += `<div class="p-2 border rounded bg-gray-50 text-gray-400"></div>`; }
-            for (let i = 1; i <= 31; i++) {
-                let extraClasses = 'bg-white hover:bg-gray-100 cursor-pointer transition';
-                let dot = '';
-                if (i === 12) { extraClasses = 'bg-green-50 font-bold border-green-300'; dot = '<div class="w-1.5 h-1.5 bg-green-500 rounded-full mx-auto mt-1"></div>'; }
-                if (i === 20) { extraClasses = 'bg-purple-50 font-bold border-purple-300'; dot = '<div class="w-1.5 h-1.5 bg-purple-500 rounded-full mx-auto mt-1"></div>'; }
-                if (i === 30) { extraClasses = 'bg-yellow-50 font-bold border-yellow-300'; dot = '<div class="w-1.5 h-1.5 bg-yellow-500 rounded-full mx-auto mt-1"></div>'; }
-                
-                html += `<div class="p-2 border border-gray-200 rounded text-center h-12 flex flex-col justify-center relative ${extraClasses}">${i}${dot}</div>`;
+            // 달력 공백 (시작 요일에 맞춤, 예: 화요일 시작)
+            for(let i=0; i<2; i++) {
+                html += `<div class="calendar-day opacity-0 pointer-events-none"></div>`;
             }
-            grid.innerHTML = html;
+            // 1~30일 생성
+            for(let i=1; i<=30; i++) {
+                let eventClass = '';
+                if(i === 10 || i === 15 || i === 25) eventClass = 'has-event';
+                
+                html += `<div class="calendar-day ${eventClass}" onclick="showToast('${i}일 일정을 확인합니다.', 'info')">${i}</div>`;
+            }
+            tbody.innerHTML = html;
         }
 
-        const eduData = [
-            { id: 1, title: "학교폭력 예방 교육", img: "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=400&q=80", source: "날아라후니쌤TV", videoId: "5USKGQwYus0", question: "학교폭력 신고 전화번호는?", answer: "117", options: ["112", "119", "117", "1339"] },
-            { id: 2, title: "올바른 사이버 예절", img: "https://images.unsplash.com/photo-1600132806370-bf17e65e942f?auto=format&fit=crop&w=400&q=80", source: "경기도교육청TV", videoId: "kh7NnogfEBI", question: "익명성을 악용하여 타인을 비방하는 행위는?", answer: "사이버 명예훼손", options: ["사이버 예절", "사이버 명예훼손", "해킹", "피싱"] },
-            { id: 3, title: "환경 보호와 분리수거", img: "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&w=400&q=80", source: "스브스뉴스 SUBUSUNEWS", videoId: "ObjSFRz_Jw8", question: "페트병 분리수거 시 올바른 방법은?", answer: "라벨을 제거하고 압착", options: ["그냥 버린다", "라벨을 제거하고 압착", "내용물을 남긴다", "종이류에 버린다"] },
-            { id: 4, title: "청소년 건강과 식습관", img: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=400&q=80", source: "식품의약품안전처", videoId: "yZ-Rsgo7zVw", question: "청소년기에 특히 필요한 영양소는?", answer: "칼슘", options: ["카페인", "칼슘", "포화지방", "나트륨"] },
-            { id: 5, title: "생명 존중 교육", img: "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?auto=format&fit=crop&w=400&q=80", source: "한국생명존중희망재단", videoId: "cq3kWT0Jkm0", question: "친구가 힘들어할 때 가장 좋은 반응은?", answer: "공감하며 들어주기", options: ["무시하기", "공감하며 들어주기", "비난하기", "소문내기"] },
-            { id: 6, title: "저작권의 이해", img: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&w=400&q=80", source: "한국저작권위원회", videoId: "qyIbtz-l6q8", question: "인터넷 사진을 무단으로 사용하는 것은?", answer: "저작권 침해", options: ["합법", "저작권 침해", "공유경제", "표현의 자유"] },
-            { id: 7, title: "지진 재난 대피 요령", img: "https://images.unsplash.com/photo-1563604169600-85fcf2dc362c?auto=format&fit=crop&w=400&q=80", source: "행정안전부", videoId: "yYwX3qqVMSE", question: "지진 발생 시 실내에서 가장 먼저 할 일은?", answer: "책상 아래로 피하기", options: ["밖으로 뛰어나가기", "엘리베이터 타기", "책상 아래로 피하기", "창문 열기"] },
-            { id: 8, title: "교통 안전 수칙", img: "https://images.unsplash.com/photo-1522204657746-fccce0824cfd?auto=format&fit=crop&w=400&q=80", source: "한국교통안전공단 교통안전TV", videoId: "tI4uSbK2N2I", question: "횡단보도를 건널 때 올바른 행동은?", answer: "스마트폰 보지 않기", options: ["뛰어서 건너기", "스마트폰 보지 않기", "자전거 타고 건너기", "빨간불에 건너기"] },
-            { id: 9, title: "디지털 성범죄 예방", img: "https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&w=400&q=80", source: "경기교육 정책 l 경기도교육청", videoId: "g7tuJ1zVZqc", question: "동의 없이 촬영된 불법 촬영물을 발견했을 때 대처법은?", answer: "즉시 신고하기", options: ["친구에게 공유하기", "저장하기", "즉시 신고하기", "무시하기"] },
-            { id: 10, title: "심폐소생술(CPR) 방법", img: "https://images.unsplash.com/photo-1583324113626-70df0f4deaab?auto=format&fit=crop&w=400&q=80", source: "고대병원", videoId: "qKGxxbpIHjU", question: "성인 심폐소생술 시 가슴 압박 속도는 1분에 몇 회?", answer: "100~120회", options: ["50~60회", "80~90회", "100~120회", "150회 이상"] }
-        ];
-
-        function renderEduGrid() {
+        function renderEduCards() {
             const grid = document.getElementById('edu-grid');
-            grid.innerHTML = eduData.map(item => `
-                <div class="bg-white rounded-xl overflow-hidden shadow border border-gray-100 hover:shadow-lg transition cursor-pointer flex flex-col h-full" onclick="openEduModal(${item.id})">
-                    <img src="${item.img}" alt="${item.title}" class="w-full h-32 object-cover">
-                    <div class="p-4 flex-grow flex flex-col justify-between">
-                        <div>
-                            <span class="text-[10px] text-gray-500 font-bold bg-gray-100 px-2 py-1 rounded">출처: ${item.source}</span>
-                            <h3 class="font-bold text-gray-800 mt-2 leading-tight">${item.title}</h3>
-                        </div>
-                        <div class="mt-3 text-right">
-                            <span class="text-xs bg-indigo-100 text-indigo-700 font-bold px-2 py-1 rounded-full"><i class="fas fa-play text-[10px]"></i> 학습하기</span>
-                        </div>
+            grid.innerHTML = eduMaterials.map(edu => {
+                const isCompleted = completedQuizzes.includes(edu.id);
+                return `
+                <div class="glass-card flex flex-col overflow-hidden relative ${isCompleted ? 'opacity-70' : ''}">
+                    ${isCompleted ? '<div class="absolute inset-0 bg-black/50 z-10 flex flex-col items-center justify-center text-white backdrop-blur-sm"><i class="fa-solid fa-circle-check text-5xl text-secondary mb-2"></i><span class="font-bold">학습 완료</span></div>' : ''}
+                    <img src="${edu.img}" class="w-full h-40 object-cover" alt="교육이미지">
+                    <div class="p-5 flex-1 flex flex-col">
+                        <span class="text-xs font-bold text-primary mb-1">${edu.category}</span>
+                        <h3 class="text-lg font-bold mb-2 text-gray-800 leading-tight">${edu.title}</h3>
+                        <button onclick="openEduModal(${edu.id})" class="mt-auto bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 rounded transition">
+                            자료 보고 퀴즈 풀기
+                        </button>
                     </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        function openEduModal(id) {
+            if (completedQuizzes.includes(id)) return;
+            
+            const edu = eduMaterials.find(e => e.id === id);
+            currentActiveEduId = id;
+            
+            document.getElementById('modal-edu-title').innerText = edu.title;
+            
+            // 유튜브 영상 로드
+            const videoElement = document.getElementById('modal-edu-video');
+            videoElement.src = `https://www.youtube.com/embed/${edu.youtubeId}?rel=0`;
+            
+            document.getElementById('modal-edu-content').innerText = edu.content;
+            document.getElementById('modal-edu-source').innerHTML = `<i class="fa-brands fa-youtube text-red-500 mr-1"></i> 출처: ${edu.source}`;
+            
+            document.getElementById('quiz-section').classList.add('hidden');
+            const startBtn = document.getElementById('start-quiz-btn');
+            startBtn.classList.remove('hidden');
+            startBtn.innerText = '학습 완료! 퀴즈 풀기';
+            startBtn.onclick = () => showQuizSection(edu);
+
+            document.getElementById('edu-modal').classList.remove('hidden');
+        }
+
+        function showQuizSection(edu) {
+            document.getElementById('start-quiz-btn').classList.add('hidden');
+            const qs = document.getElementById('quiz-section');
+            qs.classList.remove('hidden');
+            
+            document.getElementById('quiz-question').innerText = `Q. ${edu.question}`;
+            
+            const optionsHtml = edu.options.map((opt, idx) => `
+                <button onclick="submitQuizAnswer(${idx}, ${edu.answer})" class="w-full text-left p-3 rounded border border-gray-300 hover:bg-primary hover:text-white transition bg-white text-gray-700 font-medium">
+                    ${idx + 1}. ${opt}
+                </button>
+            `).join('');
+            document.getElementById('quiz-options').innerHTML = optionsHtml;
+        }
+
+        function submitQuizAnswer(selectedIdx, correctIdx) {
+            if(selectedIdx === correctIdx) {
+                completedQuizzes.push(currentActiveEduId);
+                addTokens(20, "교육 퀴즈 정답");
+                closeEduModal();
+                renderEduCards();
+            } else {
+                showToast("오답입니다. 다시 한번 생각해보세요!", "error");
+            }
+        }
+
+        function closeEduModal() {
+            document.getElementById('edu-modal').classList.add('hidden');
+            // 영상 재생 중지를 위해 src 초기화
+            document.getElementById('modal-edu-video').src = '';
+            currentActiveEduId = null;
+        }
+
+        function selectLocation(locName, btnElement) {
+            const input = document.getElementById('report-location');
+            // 선택한 구역을 입력창에 자동으로 넣고 커서 활성화 (세부 장소 입력을 유도하기 위해)
+            input.value = locName + " ";
+            input.focus(); 
+
+            // 핀 위치 이동 애니메이션
+            const pin = document.getElementById('map-pin');
+            pin.classList.remove('opacity-0');
+            
+            const btnRect = btnElement.getBoundingClientRect();
+            const containerRect = btnElement.parentElement.getBoundingClientRect();
+            
+            // 컨테이너 내부에서의 상대 좌표 계산
+            const top = btnRect.top - containerRect.top + (btnRect.height / 2);
+            const left = btnRect.left - containerRect.left + (btnRect.width / 2);
+            
+            pin.style.top = top + 'px';
+            pin.style.left = left + 'px';
+            
+            showToast(`${locName} 구역이 선택되었습니다. 상세 위치를 입력해주세요.`, 'info');
+        }
+
+        function handleMealUpload(input) {
+            if(input.files && input.files[0]) {
+                // Simulate image processing delay
+                showToast("사진을 분석중입니다...", "info");
+                setTimeout(() => {
+                    document.getElementById('meal-success').classList.remove('hidden');
+                    addTokens(30, "잔반 제로 인증");
+                    input.value = ""; // reset
+                }, 1500);
+            }
+        }
+
+        let currentPokedexId = null;
+        function renderPokedex() {
+            const grid = document.getElementById('pokedex-grid');
+            grid.innerHTML = pokedexData.map(item => `
+                <div class="glass-card p-4 text-center cursor-pointer pokedex-item ${item.found ? 'found' : ''}" onclick="openCameraModal('${item.id}')">
+                    <div class="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                        <i class="fa-solid ${item.icon} text-3xl text-gray-700"></i>
+                    </div>
+                    <h4 class="font-bold text-gray-800 text-sm mb-1">${item.name}</h4>
+                    <p class="text-xs text-primary font-bold"><i class="fa-solid fa-camera mr-1"></i>제보 시 +${item.tokens}</p>
+                    ${item.found ? '<div class="absolute -top-2 -right-2 bg-secondary text-white w-6 h-6 rounded-full flex items-center justify-center border-2 border-white"><i class="fa-solid fa-check text-xs"></i></div>' : ''}
                 </div>
             `).join('');
         }
 
-        let currentQuizItem = null;
-        function openEduModal(id) {
-            currentQuizItem = eduData.find(e => e.id === id);
-            const content = `
-                <div class="relative w-full overflow-hidden" style="padding-top: 56.25%;">
-                    <iframe class="absolute top-0 left-0 w-full h-full rounded-xl mb-4" src="https://www.youtube.com/embed/${currentQuizItem.videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                </div>
-                <p class="text-sm text-gray-600 my-4 bg-gray-50 p-4 rounded-xl border border-gray-200">
-                    <strong>${currentQuizItem.source}</strong>에서 제공하는 영상입니다. 영상을 끝까지 시청한 후 아래 퀴즈를 풀어주세요.
-                </p>
-                <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4">
-                    <h4 class="font-bold text-indigo-900 mb-3"><i class="fas fa-question-circle"></i> 퀴즈: ${currentQuizItem.question}</h4>
-                    <div class="space-y-2">
-                        ${currentQuizItem.options.map(opt => `
-                            <button onclick="checkQuizAnswer('${opt}')" class="w-full text-left bg-white border border-indigo-200 hover:bg-indigo-100 px-4 py-2 rounded-lg text-sm transition">${opt}</button>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-            showModal(currentQuizItem.title, content);
-        }
-
-        function checkQuizAnswer(selected) {
-            if (selected === currentQuizItem.answer) {
-                closeModal();
-                addTokens(10, "교육 퀴즈 정답");
-            } else {
-                showToast("오답입니다. 다시 시도해보세요.");
-            }
-        }
-
-        function updatePokedexUI() {
-            document.getElementById('pokedex-count').innerText = unlockedPokedex.length;
-            
-            for (let i = 1; i <= MAX_POKEDEX; i++) {
-                const el = document.getElementById(`dex-${i}`);
-                const icon = el.querySelector('.dex-icon');
-                const name = el.querySelector('.dex-name');
-                
-                if (unlockedPokedex.includes(i)) {
-                    el.classList.replace('bg-gray-100', 'bg-amber-50');
-                    el.classList.replace('border-gray-200', 'border-amber-300');
-                    el.classList.replace('cursor-pointer', 'cursor-default');
-                    el.classList.remove('hover:shadow-md');
-                    
-                    icon.classList.remove('text-gray-300');
-                    icon.classList.add('text-amber-500');
-                    
-                    name.classList.remove('text-gray-400');
-                    name.classList.add('text-amber-800');
-                }
-            }
-            
-            if (unlockedPokedex.length === MAX_POKEDEX && !unlockedPokedex.includes(999)) {
-                // Prevent infinite rewarding by setting length higher or using a flag
-                unlockedPokedex.push(999); 
-                addTokens(500, "도감 완성 보너스!!");
-                showModal("도감 완성!", "<div class='text-center py-6'><i class='fas fa-trophy text-6xl text-yellow-500 mb-4'></i><h2 class='text-2xl font-black text-gray-800 mb-2'>모든 분실물 마스터!</h2><p class='text-gray-600'>친구들의 물건을 찾아주어 고맙습니다.<br><strong class='text-yellow-600 text-lg'>500 토큰</strong>이 지급되었습니다.</p></div>");
-            }
-        }
-
-        function collectLostItem(id) {
-            if (unlockedPokedex.includes(id)) {
-                showToast("이미 수집한 항목입니다.");
+        function openCameraModal(id) {
+            const item = pokedexData.find(i => i.id === id);
+            if(item.found) {
+                showToast("이미 도감에 등록된 분실물 종류입니다.", "info");
                 return;
             }
-            
-            unlockedPokedex.push(id);
-            addTokens(30, "분실물 찾아주기");
-            updatePokedexUI();
-            
-            const itemName = document.querySelector(`#dex-${id} .dex-name`).innerText;
-            showModal("새로운 도감 등록!", `<div class='text-center'><i class='fas fa-star text-4xl text-yellow-500 mb-2'></i><p class='font-bold'>[${itemName}]을(를) 주인에게 찾아주어 도감이 채워졌습니다!</p></div>`);
+            currentPokedexId = id;
+            document.getElementById('camera-item-name').innerText = item.name;
+            document.getElementById('camera-modal').classList.remove('hidden');
         }
 
-        const marketItems = [
-            { id: 1, title: "학교 매점 3,000원 쿠폰", price: 300, img: "https://images.unsplash.com/photo-1621939514649-280e2ee25f60?auto=format&fit=crop&w=400&q=80" },
-            { id: 2, title: "학생 봉사시간 1시간 인정", price: 500, img: "https://images.unsplash.com/photo-1593113589914-07599019ddad?auto=format&fit=crop&w=400&q=80" },
-            { id: 3, title: "급식 하이패스 (우선 식사권)", price: 400, img: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=400&q=80" },
-            { id: 4, title: "학교 축제 VIP 앞좌석", price: 800, img: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?auto=format&fit=crop&w=400&q=80" },
-            { id: 5, title: "선생님과의 티타임 & 진로상담", price: 150, img: "https://images.unsplash.com/photo-1544717302-de2939b7ef71?auto=format&fit=crop&w=400&q=80" },
-            { id: 6, title: "체육복 1일 무료 대여권", price: 100, img: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=400&q=80" }
-        ];
+        function closeCameraModal() {
+            document.getElementById('camera-modal').classList.add('hidden');
+            currentPokedexId = null;
+        }
+
+        function handlePokedexUpload(input) {
+            if(input.files && input.files[0] && currentPokedexId) {
+                closeCameraModal();
+                showToast("사진 업로드 중...", "info");
+                
+                setTimeout(() => {
+                    const itemIndex = pokedexData.findIndex(i => i.id === currentPokedexId);
+                    pokedexData[itemIndex].found = true;
+                    addTokens(pokedexData[itemIndex].tokens, `${pokedexData[itemIndex].name} 제보`);
+                    renderPokedex();
+                    
+                    // Check if all found
+                    if(pokedexData.every(i => i.found)) {
+                        setTimeout(() => {
+                            addTokens(500, "★분실물 도감 마스터 보너스★");
+                            showToast("축하합니다! 분실물 도감을 모두 채웠습니다!", "success");
+                        }, 1000);
+                    }
+                    input.value = ""; // reset
+                }, 1000);
+            }
+        }
 
         function renderMarket() {
             const grid = document.getElementById('market-grid');
             grid.innerHTML = marketItems.map(item => `
-                <div class="bg-white rounded-xl overflow-hidden shadow-md border border-gray-100 flex flex-col">
-                    <img src="${item.img}" alt="${item.title}" class="w-full h-32 object-cover">
-                    <div class="p-4 flex-grow flex flex-col justify-between">
-                        <h3 class="font-bold text-gray-800 mb-2">${item.title}</h3>
-                        <button onclick="buyMarketItem(${item.id}, ${item.price}, '${item.title}')" class="w-full bg-yellow-100 text-yellow-700 hover:bg-yellow-400 hover:text-white font-bold py-2 rounded-lg transition border border-yellow-300 flex justify-between items-center px-4">
-                            <span>구매하기</span>
-                            <span><i class="fas fa-coins text-xs"></i> ${item.price}</span>
+                <div class="glass-card overflow-hidden flex flex-col group">
+                    <div class="h-40 overflow-hidden relative">
+                        <img src="${item.img}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" alt="상품 이미지">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                        <div class="absolute bottom-3 left-3 text-white">
+                            <h3 class="font-bold text-lg leading-tight shadow-black">${item.name}</h3>
+                        </div>
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col justify-between">
+                        <p class="text-sm text-gray-600 mb-4 h-10">${item.desc}</p>
+                        <button onclick="purchaseItem('${item.id}', ${item.price})" class="w-full bg-primary/10 hover:bg-primary text-primary hover:text-white font-bold py-2 rounded transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-coins"></i> ${item.price} 토큰으로 교환
                         </button>
                     </div>
                 </div>
             `).join('');
         }
 
-        function buyMarketItem(id, price, title) {
-            const confirmHTML = `
-                <p class="text-center mb-4"><strong>${title}</strong> 상품을 구매하시겠습니까?</p>
-                <p class="text-center text-sm text-gray-500 mb-4">차감 토큰: <strong class="text-red-500">-${price}</strong> (현재: ${currentTokens})</p>
-                <div class="flex gap-2">
-                    <button onclick="closeModal()" class="flex-1 px-4 py-2 bg-gray-200 rounded-lg font-bold text-gray-700">취소</button>
-                    <button onclick="executeBuy(${price}, '${title}')" class="flex-1 px-4 py-2 bg-yellow-500 rounded-lg font-bold text-white shadow">구매 확정</button>
-                </div>
-            `;
-            showModal("상품 구매 확인", confirmHTML, " "); // empty string to clear default actions
-        }
-
-        function executeBuy(price, title) {
-            closeModal();
-            if (subtractTokens(price)) {
-                showModal("구매 완료!", `<div class='text-center py-4'><i class='fas fa-box-open text-5xl text-yellow-500 mb-4'></i><p class='font-bold'>${title} 구매가 완료되었습니다!</p><p class='text-sm text-gray-500 mt-2'>쿠폰함에서 확인 가능합니다.</p></div>`);
+        function purchaseItem(id, price) {
+            if (userTokens >= price) {
+                userTokens -= price;
+                updateUI();
+                const item = marketItems.find(i => i.id === id);
+                showToast(`'${item.name}' 교환 완료! 교무실에서 실물 쿠폰을 수령하세요.`, 'success');
             } else {
-                showModal("구매 실패", "<div class='text-center py-4'><i class='fas fa-exclamation-triangle text-5xl text-red-500 mb-4'></i><p class='font-bold'>토큰이 부족합니다.</p></div>");
+                showToast("토큰이 부족합니다. 더 많은 학교 활동에 참여해주세요!", 'error');
             }
         }
 
-        // Mock Data for Hierarchy
-        const rankingData = {
-            grades: {
-                labels: ['1학년', '2학년', '3학년'],
-                data: [42000, 58000, 39500],
-                ids: [1, 2, 3]
-            },
-            classes: {
-                1: { labels: ['1반', '2반', '3반', '4반'], data: [9000, 12000, 10000, 11000], ids: [11, 12, 13, 14] },
-                2: { labels: ['1반', '2반', '3반', '4반', '5반'], data: [11000, 15000, 10000, 14000, 8000], ids: [21, 22, 23, 24, 25] },
-                3: { labels: ['1반', '2반', '3반'], data: [13000, 14500, 12000], ids: [31, 32, 33] }
-            },
-            students: {
-                // Just mocking a few classes
-                22: { labels: ['이준호', '김민지', '박서연', '최현우', '정다은'], data: [4500, 3800, 3100, 2400, 1200] },
-                12: { labels: ['강동원', '송혜교', '원빈', '이나영'], data: [4000, 3500, 2500, 2000] }
-            }
-        };
-
-        let currentChartLevel = 'grades'; // 'grades', 'classes', 'students'
-        let currentParentId = null;
-        let chartInstance = null;
-
-        function renderChart() {
+        function initChart() {
             const ctx = document.getElementById('rankingChart').getContext('2d');
-            const titleEl = document.getElementById('chart-title');
-            const backBtn = document.getElementById('chart-back-btn');
-
-            let chartLabels = [];
-            let chartData = [];
-            let bgColor = [];
-            let labelName = '';
-
-            if (currentChartLevel === 'grades') {
-                titleEl.innerText = "전체 학년 토큰 랭킹";
-                backBtn.classList.add('hidden');
-                chartLabels = rankingData.grades.labels;
-                chartData = rankingData.grades.data;
-                bgColor = ['rgba(59, 130, 246, 0.7)', 'rgba(16, 185, 129, 0.7)', 'rgba(139, 92, 246, 0.7)'];
-                labelName = '학년 총 토큰';
-            } else if (currentChartLevel === 'classes') {
-                titleEl.innerText = `${currentParentId}학년 반별 랭킹`;
-                backBtn.classList.remove('hidden');
-                chartLabels = rankingData.classes[currentParentId].labels;
-                chartData = rankingData.classes[currentParentId].data;
-                bgColor = 'rgba(245, 158, 11, 0.7)'; // amber
-                labelName = '학급 총 토큰';
-            } else if (currentChartLevel === 'students') {
-                const gradeStr = Math.floor(currentParentId / 10);
-                const classStr = currentParentId % 10;
-                titleEl.innerText = `${gradeStr}학년 ${classStr}반 개인 랭킹 (Top 5)`;
-                backBtn.classList.remove('hidden');
-                
-                // Fallback if no mock data
-                if (rankingData.students[currentParentId]) {
-                    chartLabels = rankingData.students[currentParentId].labels;
-                    chartData = rankingData.students[currentParentId].data;
-                } else {
-                    chartLabels = ['학생A', '학생B', '학생C', '학생D', '학생E'];
-                    chartData = [3000, 2500, 2000, 1500, 1000];
-                }
-                bgColor = 'rgba(236, 72, 153, 0.7)'; // pink
-                labelName = '개인 보유 토큰';
-            }
-
-            if (chartInstance) {
-                chartInstance.destroy();
-            }
-
-            chartInstance = new Chart(ctx, {
+            
+            rankingChartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: chartLabels,
+                    labels: rankingData.grade.labels,
                     datasets: [{
-                        label: labelName,
-                        data: chartData,
-                        backgroundColor: bgColor,
-                        borderRadius: 6,
-                        borderWidth: 1,
-                        borderColor: 'rgba(255, 255, 255, 0.5)'
+                        label: '총 획득 토큰',
+                        data: rankingData.grade.data,
+                        backgroundColor: rankingData.grade.colors,
+                        borderRadius: 8,
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: false }
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y + ' 토큰';
+                                }
+                            }
+                        }
                     },
                     scales: {
                         y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
                         x: { grid: { display: false } }
                     },
-                    onClick: (e, elements) => {
-                        if (elements.length > 0) {
-                            const index = elements[0].index;
-                            handleChartClick(index);
-                        }
-                    }
+                    onClick: handleChartClick
                 }
             });
         }
 
-        function handleChartClick(index) {
-            if (currentChartLevel === 'grades') {
-                currentParentId = rankingData.grades.ids[index];
-                currentChartLevel = 'classes';
-                renderChart();
-            } else if (currentChartLevel === 'classes') {
-                currentParentId = rankingData.classes[currentParentId].ids[index];
-                currentChartLevel = 'students';
-                renderChart();
-            } else {
-                showToast("가장 마지막 단계입니다.");
+        function handleChartClick(evt, activeElements) {
+            if (activeElements.length > 0) {
+                const index = activeElements[0].index;
+                
+                if (currentChartLevel === 'grade') {
+                    // 학년 -> 반으로 이동
+                    selectedGrade = rankingData.grade.labels[index];
+                    currentChartLevel = 'class';
+                    
+                    document.getElementById('chart-title').innerText = `${selectedGrade} 반별 토큰 랭킹`;
+                    document.getElementById('chart-back-btn').classList.remove('hidden');
+                    
+                    rankingChartInstance.data.labels = rankingData.class[selectedGrade].labels;
+                    rankingChartInstance.data.datasets[0].data = rankingData.class[selectedGrade].data;
+                    // 반별 차트는 학년 색상 통일
+                    const colorIndex = rankingData.grade.labels.indexOf(selectedGrade);
+                    rankingChartInstance.data.datasets[0].backgroundColor = rankingData.grade.colors[colorIndex];
+                    rankingChartInstance.update();
+
+                } else if (currentChartLevel === 'class') {
+                    // 반 -> 학생으로 이동
+                    selectedClass = rankingData.class[selectedGrade].labels[index];
+                    const targetKey = `${selectedGrade}_${selectedClass}`; // ex: 2학년_3반
+                    
+                    // 가짜 데이터가 있는 경우만 보여줌 (없으면 임시 생성)
+                    let sData = rankingData.student[targetKey];
+                    if(!sData) {
+                        sData = {
+                            labels: ['학생A', '학생B', '학생C', '학생D', '기타...'],
+                            data: [600, 500, 400, 300, 1000]
+                        };
+                    }
+
+                    currentChartLevel = 'student';
+                    document.getElementById('chart-title').innerText = `${selectedGrade} ${selectedClass} 개인별 Тоkеn 랭킹`;
+                    
+                    rankingChartInstance.data.labels = sData.labels;
+                    rankingChartInstance.data.datasets[0].data = sData.data;
+                    rankingChartInstance.data.datasets[0].backgroundColor = '#9333EA'; // 개인 랭킹은 보라색
+                    rankingChartInstance.update();
+                }
             }
         }
 
-        function goUpRankingLevel() {
-            if (currentChartLevel === 'students') {
-                currentChartLevel = 'classes';
-                currentParentId = Math.floor(currentParentId / 10); // Extract grade id (e.g., 22 -> 2)
-            } else if (currentChartLevel === 'classes') {
-                currentChartLevel = 'grades';
-                currentParentId = null;
+        function goUpChartLevel() {
+            if (currentChartLevel === 'student') {
+                // 학생 -> 반
+                currentChartLevel = 'class';
+                document.getElementById('chart-title').innerText = `${selectedGrade} 반별 토큰 랭킹`;
+                
+                rankingChartInstance.data.labels = rankingData.class[selectedGrade].labels;
+                rankingChartInstance.data.datasets[0].data = rankingData.class[selectedGrade].data;
+                
+                const colorIndex = rankingData.grade.labels.indexOf(selectedGrade);
+                rankingChartInstance.data.datasets[0].backgroundColor = rankingData.grade.colors[colorIndex];
+                rankingChartInstance.update();
+                
+            } else if (currentChartLevel === 'class') {
+                // 반 -> 학년
+                currentChartLevel = 'grade';
+                document.getElementById('chart-title').innerText = `전체 학년 토큰 랭킹`;
+                document.getElementById('chart-back-btn').classList.add('hidden');
+                
+                rankingChartInstance.data.labels = rankingData.grade.labels;
+                rankingChartInstance.data.datasets[0].data = rankingData.grade.data;
+                rankingChartInstance.data.datasets[0].backgroundColor = rankingData.grade.colors;
+                rankingChartInstance.update();
             }
-            renderChart();
         }
-
-
-        window.onload = function() {
-            updateTokenDisplay();
-            buildCalendar();
-            renderEduGrid();
-            renderMarket();
-            
-            // Show welcome message
-            setTimeout(() => {
-                showToast("환영합니다! 학교생활에 참여하고 토큰을 모아보세요.");
-            }, 1000);
-        };
     </script>
 </body>
 </html>
