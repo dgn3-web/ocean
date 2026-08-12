@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>우리가 발전 시키는 학교</title>
+    
+    <!-- React & Babel -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* 부드럽고 귀여운 느낌의 Jua 폰트와 본문용 Noto Sans 폰트 불러오기 */
+        @import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #FFF5F8; /* 아주 부드러운 파스텔 핑크 배경 */
+            color: #4A4A4A; /* 너무 껌지 않은 부드러운 텍스트 색상 */
+            overflow: hidden; 
+        }
+        
+        /* 통통 튀는 귀여운 폰트 적용 클래스 */
+        h1, h2, h3, .font-bubbly {
+            font-family: 'Jua', sans-serif;
+            font-weight: 400;
+        }
+
+        /* Custom Soft Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #FBCFE8; /* 부드러운 핑크색 스크롤바 */
+            border-radius: 20px;
+        }
+
+        /* Soft Animations */
+        @keyframes fadeUpBouncy {
+            0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+            60% { opacity: 1; transform: translateY(-3px) scale(1.02); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .animate-fade-in {
+            animation: fadeUpBouncy 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        /* 통통 튀는 버튼 효과 */
+        .btn-bouncy {
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .btn-bouncy:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 10px 25px -5px rgba(244, 114, 182, 0.3); /* 핑크빛 그림자 */
+        }
+        .btn-bouncy:active {
+            transform: translateY(2px) scale(0.98);
+        }
+
+        .bar-fill {
+            transition: height 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* iOS Safe Area */
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // 교육 자료 (10개)
+        const EDUCATIONS = [
+            { id: 1, title: "학교폭력, 방관자도 가해자입니다", img: "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=400&q=80", source: "학교폭력예방센터", desc: "학교폭력을 목격했을 때의 올바른 대처법을 배웁니다.", question: "학교폭력을 목격했을 때 가장 올바른 행동은?", options: ["모른 척한다", "같이 놀린다", "선생님이나 117에 신고한다", "사진을 찍어 SNS에 올린다"], answer: 2 },
+            { id: 2, title: "올바른 사이버 예절 (네티켓)", img: "https://images.unsplash.com/photo-1614064641913-6b71f3bb9e3e?auto=format&fit=crop&w=400&q=80", source: "한국인터넷진흥원", desc: "온라인에서 지켜야 할 예절과 언어폭력 예방 교육입니다.", question: "사이버 공간에서 지켜야 할 예절로 알맞은 것은?", options: ["익명이니 마음대로 말한다", "허위 사실을 유포한다", "상대방을 존중하는 언어를 사용한다", "타인의 개인정보를 공유한다"], answer: 2 },
+            { id: 3, title: "생명을 살리는 4분, 심폐소생술(CPR)", img: "https://images.unsplash.com/photo-1516841273335-e39b37888115?auto=format&fit=crop&w=400&q=80", source: "대한적십자사", desc: "위급 상황 시 생명을 구하는 CPR 방법을 알아봅시다.", question: "성인 심폐소생술 시 가슴 압박과 인공호흡의 비율은?", options: ["15:2", "30:2", "10:1", "50:5"], answer: 1 },
+            { id: 4, title: "화재 및 지진 발생 시 대피 요령", img: "https://images.unsplash.com/photo-1605335193910-449e0c1fb437?auto=format&fit=crop&w=400&q=80", source: "소방청", desc: "학교에서 화재나 지진이 발생했을 때의 안전한 대피 요령입니다.", question: "지진 발생 시 가장 먼저 해야 할 행동은?", options: ["밖으로 무작정 뛴다", "책상 밑으로 들어가 머리를 보호한다", "엘리베이터를 탄다", "창문 옆에 선다"], answer: 1 },
+            { id: 5, title: "지구를 살리는 올바른 분리수거", img: "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&w=400&q=80", source: "환경부", desc: "플라스틱, 종이 등 재활용품을 올바르게 분리배출하는 방법입니다.", question: "페트병을 버릴 때 올바른 방법은?", options: ["내용물이 든 채로 버린다", "라벨을 떼고 찌그러뜨려 버린다", "일반 쓰레기통에 버린다", "불에 태운다"], answer: 1 },
+            { id: 6, title: "저작권, 어디까지 알고 있나요?", img: "https://images.unsplash.com/photo-1505664177922-9818ab9380f5?auto=format&fit=crop&w=400&q=80", source: "한국저작권위원회", desc: "과제물 작성이나 SNS 활동 시 지켜야 할 저작권 교육입니다.", question: "인터넷에 있는 사진을 내 블로그에 쓸 때 올바른 행동은?", options: ["그냥 쓴다", "출처를 밝히고 쓴다 (단, 무료 허용 이미지에 한함)", "내가 찍은 것처럼 올린다", "워터마크를 지운다"], answer: 1 },
+            { id: 7, title: "교통안전, 스쿨존에서의 약속", img: "https://images.unsplash.com/photo-1579893963479-5867162cf565?auto=format&fit=crop&w=400&q=80", source: "도로교통공단", desc: "등하굣길 안전하게 횡단보도를 건너는 방법입니다.", question: "횡단보도를 건널 때 가장 안전한 방법은?", options: ["스마트폰을 보며 건넌다", "뛰어서 빨리 건넌다", "좌우를 살피고 손을 들고 건넌다", "빨간불일 때 건넌다"], answer: 2 },
+            { id: 8, title: "우리는 모두 소중해요 (생명존중)", img: "https://images.unsplash.com/photo-1490730141103-6cac27aaab94?auto=format&fit=crop&w=400&q=80", source: "보건복지부", desc: "자신과 타인의 생명을 존중하고 배려하는 마음가짐을 배웁니다.", question: "친구가 우울해하며 힘들어할 때 좋은 태도는?", options: ["모른 척한다", "꾀병이라고 놀린다", "이야기를 들어주고 선생님께 도움을 요청한다", "소문을 낸다"], answer: 2 },
+            { id: 9, title: "탄소중립, 학교에서 실천하기", img: "https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?auto=format&fit=crop&w=400&q=80", source: "한국환경공단", desc: "일회용품 줄이기, 에너지 절약 등 탄소중립 실천 방안입니다.", question: "학교에서 실천할 수 있는 탄소중립 행동이 아닌 것은?", options: ["사용하지 않는 교실 불 끄기", "종이컵 대신 텀블러 사용하기", "겨울에 히터 온도 최고로 높이기", "이면지 사용하기"], answer: 2 },
+            { id: 10, title: "성폭력 및 디지털 성범죄 예방", img: "https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=400&q=80", source: "여성가족부", desc: "디지털 성범죄의 심각성과 대처 방안에 대해 알아봅니다.", question: "동의 없이 타인의 신체 사진을 찍거나 유포하는 행위는?", options: ["장난이다", "우정의 표현이다", "관심받기 위한 행동이다", "명백한 범죄이다"], answer: 3 }
+        ];
+
+        // 마켓 아이템 (소프트한 색상에 맞춰 둥근 이미지 제공)
+        const MARKET_ITEMS = [
+            { id: 1, name: "매점 2,000원 교환권", price: 200, img: "https://images.unsplash.com/photo-1581452292723-577717f93be0?auto=format&fit=crop&w=400&q=80" },
+            { id: 2, name: "학생 봉사시간 1시간", price: 500, img: "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?auto=format&fit=crop&w=400&q=80" },
+            { id: 3, name: "특별 외출증 (1회)", price: 300, img: "https://images.unsplash.com/photo-1555529733-0e67056058e1?auto=format&fit=crop&w=400&q=80" },
+            { id: 4, name: "급식 하이패스권 (우선배식)", price: 150, img: "https://images.unsplash.com/photo-1627914856417-183e8b15d292?auto=format&fit=crop&w=400&q=80" },
+            { id: 5, name: "교장선생님과 티타임", price: 50, img: "https://images.unsplash.com/photo-1544717302-de2939b7ef71?auto=format&fit=crop&w=400&q=80" },
+            { id: 6, name: "학급 단체 야구장 관람권", price: 99999, img: "https://images.unsplash.com/photo-1508344928928-7137b29de218?auto=format&fit=crop&w=400&q=80", desc: "(학기말 랭킹 1위 반 자동 지급)" }
+        ];
+
+        // 분실물 도감 아이템
+        const POKEDEX_ITEMS = [
+            { id: 'item1', name: '체육복', icon: 'shirt' },
+            { id: 'item2', name: '무선이어폰', icon: 'headphones' },
+            { id: 'item3', name: '학생증', icon: 'credit-card' },
+            { id: 'item4', name: '우산', icon: 'umbrella' },
+            { id: 'item5', name: '텀블러', icon: 'coffee' },
+            { id: 'item6', name: '안경', icon: 'glasses' },
+            { id: 'item7', name: '필통', icon: 'pen-tool' },
+            { id: 'item8', name: '지갑', icon: 'wallet' },
+            { id: 'item9', name: '슬리퍼', icon: 'footprints' }
+        ];
+
+        // 랭킹 데이터 (파스텔 톤 색상으로 변경)
+        const RANKING_DATA = {
+            grades: [
+                { id: 'g1', label: '1학년', value: 12500, color: '#93C5FD' }, // 파스텔 블루
+                { id: 'g2', label: '2학년', value: 18400, color: '#6EE7B7' }, // 파스텔 민트
+                { id: 'g3', label: '3학년', value: 9200, color: '#FCD34D' }  // 파스텔 옐로우
+            ],
+            classes: {
+                'g1': [
+                    { id: 'c1-1', label: '1반', value: 4000, color: '#93C5FD' },
+                    { id: 'c1-2', label: '2반', value: 3500, color: '#93C5FD' },
+                    { id: 'c1-3', label: '3반', value: 5000, color: '#93C5FD' }
+                ],
+                'g2': [
+                    { id: 'c2-1', label: '1반', value: 8000, color: '#6EE7B7' },
+                    { id: 'c2-2', label: '2반', value: 6000, color: '#6EE7B7' },
+                    { id: 'c2-3', label: '3반', value: 4400, color: '#6EE7B7' }
+                ],
+                'g3': [
+                    { id: 'c3-1', label: '1반', value: 3000, color: '#FCD34D' },
+                    { id: 'c3-2', label: '2반', value: 4200, color: '#FCD34D' },
+                    { id: 'c3-3', label: '3반', value: 2000, color: '#FCD34D' }
+                ]
+            },
+            students: {
+                'c2-1': [
+                    { id: 's1', label: '김철수', value: 1200, color: '#C4B5FD' }, // 파스텔 퍼플
+                    { id: 's2', label: '이영희', value: 950, color: '#C4B5FD' },
+                    { id: 's3', label: '박지성', value: 800, color: '#C4B5FD' },
+                    { id: 's4', label: '최동원', value: 750, color: '#C4B5FD' },
+                    { id: 's5', label: '기타(26명)', value: 4300, color: '#F1F5F9' } // 아주 연한 회색
+                ]
+            }
+        };
+
+        // 부드러운 모달 컴포넌트
+        const Modal = ({ isOpen, title, content, onClose }) => {
+            if (!isOpen) return null;
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-pink-900/20 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-white/90 backdrop-blur-md rounded-[2rem] p-8 w-full max-w-sm shadow-2xl flex flex-col items-center text-center border border-white">
+                        <div className="w-20 h-20 bg-gradient-to-br from-pink-100 to-purple-100 rounded-[1.5rem] flex items-center justify-center mb-4 text-pink-500 shadow-inner">
+                            <i data-lucide={title.includes("성공") || title.includes("완료") || title.includes("정답") || title.includes("완성") ? "check-circle" : "bell"} className="w-10 h-10"></i>
+                        </div>
+                        <h3 className="text-2xl font-bubbly text-gray-800 mb-2">{title}</h3>
+                        <p className="text-gray-600 mb-8 whitespace-pre-line font-medium leading-relaxed">{content}</p>
+                        <button onClick={onClose} className="btn-bouncy w-full py-4 bg-gradient-to-r from-pink-400 to-rose-400 text-white rounded-3xl font-bold shadow-lg shadow-pink-200">확인할게요!</button>
+                    </div>
+                </div>
+            );
+        };
+
+        // 귀여운 막대 그래프 컴포넌트
+        const BarChart = ({ data, onClick, title, subtitle, onBack }) => {
+            const maxValue = Math.max(...data.map(d => d.value)) * 1.2; 
+            
+            return (
+                <div className="bg-white/80 backdrop-blur-md p-8 rounded-[2rem] shadow-xl shadow-pink-100/50 border border-white animate-fade-in w-full h-96 flex flex-col">
+                    <div className="flex justify-between items-start mb-8">
+                        <div>
+                            <h3 className="text-2xl font-bubbly text-gray-800">{title}</h3>
+                            <p className="text-sm text-gray-500 font-medium mt-1">{subtitle}</p>
+                        </div>
+                        {onBack && (
+                            <button onClick={onBack} className="btn-bouncy text-sm bg-pink-50 hover:bg-pink-100 px-4 py-2 rounded-2xl font-bold text-pink-500 flex items-center gap-2">
+                                <i data-lucide="arrow-left" className="w-4 h-4"></i> 돌아가기
+                            </button>
+                        )}
+                    </div>
+                    
+                    <div className="flex-1 flex items-end justify-around gap-4 relative">
+                        {/* 배경 가이드라인 */}
+                        <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-30 z-0 py-4">
+                            <div className="w-full border-t-2 border-dashed border-gray-200"></div>
+                            <div className="w-full border-t-2 border-dashed border-gray-200"></div>
+                            <div className="w-full border-t-2 border-dashed border-gray-200"></div>
+                        </div>
+
+                        {data.map((item, index) => {
+                            const heightPercent = (item.value / maxValue) * 100;
+                            return (
+                                <div key={item.id} className="flex flex-col items-center justify-end h-full w-full group cursor-pointer z-10" onClick={() => onClick && onClick(item)}>
+                                    {/* 말풍선 툴팁 */}
+                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white border border-pink-100 shadow-lg text-pink-500 text-sm font-bold py-2 px-3 rounded-2xl mb-3 whitespace-nowrap pointer-events-none transform group-hover:-translate-y-2 duration-300">
+                                        {item.value.toLocaleString()} 🪙
+                                    </div>
+                                    
+                                    {/* 둥근 바 */}
+                                    <div className="w-16 md:w-24 rounded-t-3xl rounded-b-md relative overflow-visible bar-fill transition-all duration-300 group-hover:brightness-105 group-hover:shadow-[0_0_20px_rgba(0,0,0,0.1)]"
+                                         style={{ height: `${heightPercent}%`, backgroundColor: item.color, animation: `fadeUpBouncy 0.6s ease-out ${index * 0.1}s backwards` }}>
+                                         {/* 왕관 아이콘 (1등) */}
+                                         {index === 0 && (
+                                            <div className="absolute -top-6 left-0 w-full flex justify-center animate-bounce">
+                                                <i data-lucide="crown" className="w-7 h-7 text-yellow-400 drop-shadow-md"></i>
+                                            </div>
+                                         )}
+                                    </div>
+                                    {/* 라벨 */}
+                                    <div className="mt-4 text-base font-bubbly text-gray-600 group-hover:text-pink-500 transition-colors">
+                                        {item.label}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            );
+        };
+
+        // 1. 홈 뷰 (캘린더)
+        const HomeView = () => (
+            <div className="space-y-6 animate-fade-in">
+                {/* 화사한 그라데이션 배너 */}
+                <div className="bg-gradient-to-br from-pink-300 via-purple-300 to-indigo-300 rounded-[2.5rem] p-10 text-white shadow-2xl shadow-purple-200 relative overflow-hidden">
+                    <div className="relative z-10">
+                        <h2 className="text-4xl font-bubbly mb-3 drop-shadow-sm">우리가 발전 시키는 학교 ✨</h2>
+                        <p className="text-white/90 text-lg font-medium">학생들의 작은 참여가 모여 둥글고 따뜻한 학교를 만듭니다.</p>
+                    </div>
+                    <i data-lucide="sparkles" className="absolute -bottom-8 -right-8 w-48 h-48 text-white opacity-20"></i>
+                    <i data-lucide="heart" className="absolute top-8 right-32 w-12 h-12 text-white opacity-30 animate-pulse"></i>
+                </div>
+                
+                <div className="bg-white/80 backdrop-blur-md rounded-[2rem] p-8 shadow-xl shadow-pink-100/50 border border-white">
+                    <h3 className="text-2xl font-bubbly mb-6 flex items-center gap-2 text-purple-600">
+                        <i data-lucide="calendar-heart" className="w-7 h-7"></i> 학교 연계 프로젝트 캘린더
+                    </h3>
+                    <div className="space-y-4">
+                        {['9월 10일: 플라스틱 제로 캠페인 🌍', '9월 15일: 친구 사랑 표어 공모전 💌', '9월 20일: 학생 자치법정 모의재판 ⚖️', '10월 5일: 2학기 학교 발전 대토론회 🎤'].map((event, i) => (
+                            <div key={i} className="flex items-center gap-4 p-4 bg-purple-50/50 rounded-2xl border border-purple-100 hover:bg-purple-100/50 hover:scale-[1.01] transition-all duration-300 cursor-pointer">
+                                <div className="w-3 h-3 rounded-full bg-purple-400 shadow-sm shadow-purple-200"></div>
+                                <span className="font-bold text-gray-700">{event}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+
+        // 2. 신고/건의 뷰 (파스텔톤 2D 맵)
+        const ReportView = ({ addTokens, showModal }) => {
+            const [location, setLocation] = useState("");
+            const [category, setCategory] = useState("시설/청소");
+            const [content, setContent] = useState("");
+
+            const handleSubmit = () => {
+                if(!content.trim()) return showModal("앗!", "어떤 점이 불편했는지 내용을 적어주세요!");
+                addTokens(10);
+                showModal("건의 접수 완료! 💌", `[${location || '위치 미지정'}] 건의가 따뜻하게 접수되었습니다.\n참여 보상으로 10 토큰을 드려요!`);
+                setContent(""); setLocation("");
+            };
+
+            const mapBlocks = [
+                { id: 'main', label: '본관 (교실)', color: 'bg-blue-50 border-blue-200 text-blue-500', active: 'bg-blue-400 text-white border-blue-400 shadow-lg shadow-blue-200', col: 'col-span-2 row-span-1' },
+                { id: 'field', label: '운동장', color: 'bg-green-50 border-green-200 text-green-500', active: 'bg-green-400 text-white border-green-400 shadow-lg shadow-green-200', col: 'col-span-1 row-span-2' },
+                { id: 'cafeteria', label: '급식실', color: 'bg-yellow-50 border-yellow-200 text-yellow-600', active: 'bg-yellow-400 text-white border-yellow-400 shadow-lg shadow-yellow-200', col: 'col-span-1 row-span-1' },
+                { id: 'gym', label: '체육관', color: 'bg-purple-50 border-purple-200 text-purple-500', active: 'bg-purple-400 text-white border-purple-400 shadow-lg shadow-purple-200', col: 'col-span-1 row-span-1' },
+            ];
+
+            return (
+                <div className="bg-white/80 backdrop-blur-md rounded-[2.5rem] p-8 shadow-xl shadow-pink-100/50 border border-white animate-fade-in flex flex-col lg:flex-row gap-10">
+                    {/* 왼쪽: 지도 */}
+                    <div className="flex-1 flex flex-col">
+                        <h2 className="text-2xl font-bubbly mb-6 flex items-center gap-2 text-indigo-500">
+                            <i data-lucide="map-pinned" className="w-7 h-7"></i> 어디서 불편함을 겪었나요?
+                        </h2>
+                        <div className="grid grid-cols-3 grid-rows-2 gap-4 h-72 bg-indigo-50/30 p-6 rounded-[2rem] border-2 border-indigo-50">
+                            {mapBlocks.map(block => (
+                                <button 
+                                    key={block.id}
+                                    onClick={() => setLocation(block.label)}
+                                    className={`${block.col} rounded-[1.5rem] border-2 flex items-center justify-center font-bubbly text-xl transition-all duration-300
+                                        ${location === block.label ? block.active : `${block.color} hover:bg-white hover:-translate-y-1 hover:shadow-md`}`}>
+                                    {block.label}
+                                </button>
+                            ))}
+                        </div>
+                        <p className="mt-4 text-center text-gray-500 font-medium">선택된 위치: <span className="text-indigo-500 font-bold bg-indigo-50 px-3 py-1 rounded-full">{location || '없음'}</span></p>
+                    </div>
+
+                    {/* 오른쪽: 폼 */}
+                    <div className="flex-1 flex flex-col space-y-4 justify-between">
+                        <div>
+                            <h2 className="text-2xl font-bubbly mb-6 flex items-center gap-2 text-pink-500">
+                                <i data-lucide="message-square-heart" className="w-7 h-7"></i> 자세히 이야기해주세요
+                            </h2>
+                            <select value={category} onChange={e => setCategory(e.target.value)} className="w-full p-4 rounded-2xl border-2 border-pink-50 bg-white focus:border-pink-300 focus:ring-4 focus:ring-pink-100 outline-none font-bold text-gray-700 mb-4 transition-all">
+                                <option>급식 건의 🍱</option><option>시설 및 청소 🧹</option><option>교우 관계 / 익명신고 🤝</option><option>기타 의견 ✨</option>
+                            </select>
+                            <textarea 
+                                value={content} onChange={e => setContent(e.target.value)}
+                                className="w-full p-5 rounded-3xl border-2 border-pink-50 bg-white focus:border-pink-300 focus:ring-4 focus:ring-pink-100 outline-none h-40 resize-none font-medium text-gray-700 transition-all custom-scrollbar" 
+                                placeholder="어떤 점이 어려웠나요? 우리가 함께 해결해봐요!"></textarea>
+                        </div>
+                        <div className="flex gap-3">
+                            <button className="btn-bouncy flex-1 py-4 bg-gray-50 text-gray-600 border-2 border-gray-100 rounded-2xl font-bold hover:bg-gray-100 flex items-center justify-center gap-2">
+                                <i data-lucide="image-plus" className="w-5 h-5"></i> 사진 첨부
+                            </button>
+                            <button onClick={handleSubmit} className="btn-bouncy flex-[2] py-4 bg-gradient-to-r from-pink-400 to-rose-400 text-white font-bubbly text-xl rounded-2xl shadow-lg shadow-pink-200">
+                                제출하고 10 🪙 받기
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // 3. 급식 인증 뷰
+        const MealCheckView = ({ addTokens, showModal }) => {
+            const handleCamera = () => {
+                showModal("찰칵! 📸", "맛있게 먹은 식판을 분석하고 있어요...\n(잔반 없는 식판 확인 완료!)");
+                setTimeout(() => {
+                    addTokens(20);
+                    showModal("인증 성공! 🌿", "잔반 하나 없이 싹싹 비웠네요!\n지구를 아낀 보상으로 20 토큰을 드려요!");
+                }, 1500);
+            };
+
+            return (
+                <div className="bg-white/80 backdrop-blur-md rounded-[2.5rem] p-10 shadow-xl shadow-green-100/50 border border-white animate-fade-in text-center max-w-lg mx-auto">
+                    <div className="w-28 h-28 bg-gradient-to-br from-green-100 to-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner border-4 border-white">
+                        <i data-lucide="utensils-crossed" className="w-14 h-14"></i>
+                    </div>
+                    <h2 className="text-3xl font-bubbly mb-3 text-gray-800">잔반 없는 급식 인증</h2>
+                    <p className="text-gray-600 mb-10 font-medium">다 먹은 식판을 예쁘게 찍어서<br/>지구도 구하고 토큰도 받아보세요!</p>
+                    
+                    <div className="btn-bouncy w-full h-64 bg-emerald-50/50 rounded-[3rem] border-4 border-dashed border-emerald-200 flex flex-col items-center justify-center cursor-pointer hover:bg-emerald-50 mb-8 group" onClick={handleCamera}>
+                        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4 group-hover:scale-110 transition-transform">
+                            <i data-lucide="camera" className="w-8 h-8 text-emerald-400"></i>
+                        </div>
+                        <span className="font-bubbly text-xl text-emerald-600">여기를 눌러 카메라 열기</span>
+                    </div>
+                    <div className="inline-block bg-white border-2 border-emerald-100 px-6 py-3 rounded-full shadow-sm">
+                        <p className="text-base text-emerald-600 font-bold">오늘의 환경 지킴이 보상: <span className="text-xl ml-1">20 🪙</span></p>
+                    </div>
+                </div>
+            );
+        };
+
+        // 4. 교육 뷰 (부드러운 카드 디자인)
+        const EducationView = ({ addTokens, showModal }) => {
+            const [selectedEdu, setSelectedEdu] = useState(null);
+            const [quizAnswer, setQuizAnswer] = useState(null);
+
+            const handleQuizSubmit = () => {
+                if(quizAnswer === null) return;
+                if(quizAnswer === selectedEdu.answer) {
+                    addTokens(15);
+                    showModal("정답입니다! 🎉", "열심히 공부했네요!\n보상으로 15 토큰이 지급되었습니다.");
+                    setSelectedEdu(null);
+                } else {
+                    showModal("앗, 아쉬워요! 💦", "다시 한번 곰곰이 생각하고 풀어볼까요?");
+                }
+                setQuizAnswer(null);
+            };
+
+            if (selectedEdu) {
+                return (
+                    <div className="bg-white/90 backdrop-blur-md rounded-[2.5rem] overflow-hidden shadow-2xl shadow-blue-100/50 border border-white animate-fade-in max-w-2xl mx-auto">
+                        <div className="relative">
+                            <img src={selectedEdu.img} alt="Edu" className="w-full h-64 object-cover" />
+                            <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-gray-600 shadow-sm">
+                                출처: {selectedEdu.source}
+                            </div>
+                        </div>
+                        <div className="p-8">
+                            <h2 className="text-3xl font-bubbly mb-4 text-gray-800">{selectedEdu.title}</h2>
+                            <p className="text-gray-700 mb-8 bg-blue-50/50 p-5 rounded-2xl font-medium leading-relaxed border border-blue-50">{selectedEdu.desc}</p>
+                            
+                            <div className="border-t-2 border-dashed border-gray-100 pt-8">
+                                <h3 className="text-2xl font-bubbly text-blue-500 mb-4 flex items-center gap-2">
+                                    <i data-lucide="lightbulb" className="w-6 h-6"></i> 반짝반짝 퀴즈 타임
+                                </h3>
+                                <p className="font-bold text-lg mb-6 text-gray-700">{selectedEdu.question}</p>
+                                <div className="space-y-3 mb-8">
+                                    {selectedEdu.options.map((opt, idx) => (
+                                        <button 
+                                            key={idx} 
+                                            onClick={() => setQuizAnswer(idx)}
+                                            className={`btn-bouncy w-full text-left p-5 rounded-2xl border-2 transition-all font-bold text-gray-700
+                                                ${quizAnswer === idx ? 'border-blue-400 bg-blue-50 text-blue-600 shadow-md shadow-blue-100' : 'border-gray-100 bg-gray-50 hover:border-blue-200 hover:bg-white'}`}>
+                                            <span className="inline-block w-8 h-8 text-center leading-8 rounded-full bg-white border border-gray-200 mr-3 text-gray-400">{idx + 1}</span> 
+                                            {opt}
+                                        </button>
+                                    ))}
+                                </div>
+                                <div className="flex gap-3">
+                                    <button onClick={() => setSelectedEdu(null)} className="btn-bouncy flex-1 py-4 bg-gray-100 text-gray-600 rounded-2xl font-bold hover:bg-gray-200">목록으로</button>
+                                    <button onClick={handleQuizSubmit} className="btn-bouncy flex-[2] py-4 bg-gradient-to-r from-blue-400 to-indigo-400 text-white rounded-2xl font-bubbly text-xl shadow-lg shadow-blue-200">정답 확인하기</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="animate-fade-in">
+                    <h2 className="text-3xl font-bubbly mb-3 flex items-center gap-2 text-indigo-500"><i data-lucide="book-heart" className="w-8 h-8"></i> 알록달록 필수 교육</h2>
+                    <p className="text-gray-600 mb-8 font-medium">유익한 자료를 읽고 퀴즈를 맞히면 15 토큰을 드려요!</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {EDUCATIONS.map(edu => (
+                            <div key={edu.id} onClick={() => setSelectedEdu(edu)} className="btn-bouncy bg-white rounded-[2rem] border-2 border-transparent hover:border-indigo-100 overflow-hidden cursor-pointer shadow-lg shadow-indigo-50/50 group flex h-36">
+                                <img src={edu.img} className="w-2/5 object-cover group-hover:scale-110 transition duration-500" alt={edu.title}/>
+                                <div className="p-5 w-3/5 flex flex-col justify-center bg-white">
+                                    <h4 className="font-bold text-gray-800 mb-2 line-clamp-2 leading-tight">{edu.title}</h4>
+                                    <span className="text-sm text-indigo-500 bg-indigo-50 px-3 py-1 rounded-full self-start font-bold border border-indigo-100">보상 15 🪙</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        // 5. 토큰 마켓 뷰 (둥글고 따뜻한 상점)
+        const MarketView = ({ tokens, setTokens, showModal }) => {
+            const handlePurchase = (item) => {
+                if (tokens >= item.price) {
+                    setTokens(prev => prev - item.price);
+                    showModal("구매 완료! 🎁", `[${item.name}] 상품을 성공적으로 교환했어요!\n남은 토큰: ${tokens - item.price} 🪙`);
+                } else {
+                    showModal("앗, 토큰이 부족해요 🥺", "활동을 통해 토큰을 조금 더 모아보세요!");
+                }
+            };
+
+            return (
+                <div className="animate-fade-in">
+                    <div className="flex flex-col md:flex-row justify-between items-center mb-8 bg-gradient-to-r from-amber-100 to-orange-100 p-8 rounded-[2.5rem] border border-white shadow-xl shadow-orange-100/50 gap-4">
+                        <div>
+                            <h2 className="text-3xl font-bubbly text-orange-600 flex items-center gap-2 mb-2">
+                                <i data-lucide="store" className="w-8 h-8"></i> 두근두근 토큰 마켓
+                            </h2>
+                            <p className="text-orange-700/80 font-medium">열심히 모은 토큰으로 원하는 보상과 교환해보세요!</p>
+                        </div>
+                        <div className="text-2xl font-bubbly bg-white text-orange-500 px-8 py-4 rounded-[2rem] shadow-sm border-2 border-orange-50 flex items-center gap-2">
+                            내 지갑: <span className="text-3xl">{tokens.toLocaleString()}</span> 🪙
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {MARKET_ITEMS.map(item => (
+                            <div key={item.id} className="bg-white rounded-[2rem] overflow-hidden border border-gray-50 shadow-lg shadow-orange-50/50 flex flex-col group">
+                                <div className="h-48 overflow-hidden relative p-2">
+                                    <img src={item.img} className="w-full h-full object-cover rounded-[1.5rem] group-hover:scale-105 transition duration-500" alt={item.name}/>
+                                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md text-orange-500 font-bubbly text-xl px-4 py-1.5 rounded-full shadow-sm border border-orange-100">
+                                        {item.price.toLocaleString()} 🪙
+                                    </div>
+                                </div>
+                                <div className="p-6 flex-1 flex flex-col justify-between">
+                                    <div className="mb-4">
+                                        <h3 className="font-bold text-xl text-gray-800 mb-1">{item.name}</h3>
+                                        {item.desc && <p className="text-sm text-gray-500 font-medium">{item.desc}</p>}
+                                    </div>
+                                    <button 
+                                        onClick={() => handlePurchase(item)}
+                                        className="btn-bouncy w-full py-4 bg-orange-50 hover:bg-orange-400 text-orange-500 hover:text-white rounded-2xl font-bubbly text-xl transition-colors">
+                                        교환하기
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        // 6. 랭킹 뷰 (Drill-down)
+        const RankingView = () => {
+            const [level, setLevel] = useState('grade'); 
+            const [selectedGrade, setSelectedGrade] = useState(null);
+            const [selectedClass, setSelectedClass] = useState(null);
+
+            const handleBarClick = (item) => {
+                if (level === 'grade') {
+                    setSelectedGrade(item.id);
+                    setLevel('class');
+                } else if (level === 'class') {
+                    if (item.id === 'c2-1') {
+                        setSelectedClass(item.label);
+                        setLevel('student');
+                    } else {
+                        alert('데모 버전이라 2학년 1반 친구들만 보여요! 2학년 1반을 눌러보세요.');
+                    }
+                }
+            };
+
+            const goBack = () => {
+                if (level === 'student') setLevel('class');
+                else if (level === 'class') setLevel('grade');
+            };
+
+            let currentData, title, subtitle;
+            if (level === 'grade') {
+                currentData = RANKING_DATA.grades;
+                title = "학년별 명예의 전당 🏆";
+                subtitle = "막대를 클릭하면 반별 순위를 볼 수 있어요!";
+            } else if (level === 'class') {
+                currentData = RANKING_DATA.classes[selectedGrade] || [];
+                const gradeName = RANKING_DATA.grades.find(g => g.id === selectedGrade)?.label;
+                title = `${gradeName} 반별 랭킹 🌟`;
+                subtitle = "학기말 1등 반은 다같이 야구장으로 떠나요! ⚾";
+            } else {
+                currentData = RANKING_DATA.students['c2-1'];
+                const gradeName = RANKING_DATA.grades.find(g => g.id === selectedGrade)?.label;
+                title = `${gradeName} ${selectedClass} 멋쟁이들 🏅`;
+                subtitle = "우리 반을 위해 가장 노력한 친구들은 누구일까요?";
+            }
+
+            const sortedData = [...currentData].sort((a, b) => b.value - a.value);
+
+            return (
+                <div className="space-y-8 animate-fade-in max-w-4xl mx-auto">
+                    <div className="bg-gradient-to-r from-blue-400 to-indigo-400 rounded-[2.5rem] p-8 text-white flex justify-between items-center shadow-xl shadow-blue-200">
+                        <div>
+                            <h2 className="text-3xl font-bubbly mb-2 flex items-center gap-2">학교 토큰 랭킹 대전!</h2>
+                            <p className="text-blue-50 font-medium">가장 많은 토큰을 모은 학급은 학기말 야구장 관람을 쏩니다! ⚾</p>
+                        </div>
+                        <i data-lucide="trophy" className="w-16 h-16 text-yellow-300 drop-shadow-md"></i>
+                    </div>
+
+                    <BarChart 
+                        data={sortedData} 
+                        onClick={handleBarClick} 
+                        title={title} 
+                        subtitle={subtitle} 
+                        onBack={level !== 'grade' ? goBack : null} 
+                    />
+                </div>
+            );
+        };
+
+        // 7. 분실물 도감 뷰 (귀여운 포켓몬 도감 스타일)
+        const LostFoundView = ({ foundItems, setFoundItems, addTokens, showModal }) => {
+            const handleItemClick = (item) => {
+                if(!foundItems.includes(item.id)) {
+                    const newItems = [...foundItems, item.id];
+                    setFoundItems(newItems);
+                    
+                    if (newItems.length === POKEDEX_ITEMS.length) {
+                        addTokens(1000);
+                        showModal("도감 완성! 🎉", "세상에! 모든 친구들의 물건을 찾아주셨네요!\n마음씨 고운 당신에게 특별 포상 1000 토큰을 드립니다!");
+                    } else {
+                        addTokens(30);
+                        showModal("분실물 회수 완료! 💖", `[${item.name}]의 주인을 찾아주었어요.\n착한 일 보상으로 30 토큰을 드려요!`);
+                    }
+                }
+            };
+
+            const progress = (foundItems.length / POKEDEX_ITEMS.length) * 100;
+
+            return (
+                <div className="animate-fade-in max-w-4xl mx-auto">
+                    <div className="bg-white/80 backdrop-blur-md rounded-[2.5rem] p-8 shadow-xl shadow-pink-100/50 border border-white mb-8">
+                        <h2 className="text-3xl font-bubbly mb-3 flex items-center gap-2 text-rose-400">
+                            <i data-lucide="backpack" className="w-8 h-8"></i> 분실물 찾아주기 도감
+                        </h2>
+                        <p className="text-gray-600 mb-8 font-medium">친구들이 잃어버린 물건을 찾아주고 도감을 채워보세요. 모두 채우면 엄청난 보상이 기다려요!</p>
+                        
+                        <div className="mb-3 flex justify-between text-base font-bubbly text-gray-500">
+                            <span>나의 도감 완성도</span>
+                            <span className="text-rose-500 bg-rose-50 px-3 py-1 rounded-full">{foundItems.length} / {POKEDEX_ITEMS.length}</span>
+                        </div>
+                        <div className="bg-gray-100 rounded-full h-6 overflow-hidden border border-gray-200 p-1">
+                            <div className="bg-gradient-to-r from-pink-300 to-rose-400 h-full rounded-full transition-all duration-1000 relative" style={{ width: `${progress}%` }}>
+                                <div className="absolute inset-0 bg-white/20 w-full h-full animate-pulse"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                        {POKEDEX_ITEMS.map(item => {
+                            const isFound = foundItems.includes(item.id);
+                            return (
+                                <div key={item.id} onClick={() => handleItemClick(item)} 
+                                     className={`btn-bouncy relative aspect-square rounded-[2rem] border-4 flex flex-col items-center justify-center cursor-pointer transition-all duration-300
+                                     ${isFound ? 'bg-rose-50 border-rose-200 shadow-md' : 'bg-white border-dashed border-gray-200 hover:border-rose-100'}`}>
+                                    <i data-lucide={item.icon} className={`w-12 h-12 mb-3 ${isFound ? 'text-rose-400' : 'text-gray-200'}`}></i>
+                                    <span className={`text-base font-bubbly ${isFound ? 'text-rose-600' : 'text-gray-300'}`}>
+                                        {isFound ? item.name : '???'}
+                                    </span>
+                                    {isFound && <div className="absolute -top-2 -right-2 bg-white rounded-full"><i data-lucide="sparkles" className="w-8 h-8 text-yellow-400 drop-shadow-sm"></i></div>}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [view, setView] = useState('home');
+            const [tokens, setTokens] = useState(150);
+            const [foundItems, setFoundItems] = useState([]);
+            const [modal, setModal] = useState({ isOpen: false, title: '', content: '' });
+
+            const showModal = (title, content) => setModal({ isOpen: true, title, content });
+            const closeModal = () => setModal(prev => ({ ...prev, isOpen: false }));
+            const addTokens = (amount) => setTokens(prev => prev + amount);
+
+            useEffect(() => {
+                if (window.lucide) window.lucide.createIcons();
+            });
+
+            const navItems = [
+                { id: 'home', icon: 'home', label: '우리학교 홈' },
+                { id: 'report', icon: 'megaphone', label: '건의 우체통' },
+                { id: 'meal', icon: 'utensils', label: '급식 찰칵' },
+                { id: 'education', icon: 'book-open', label: '알록달록 교육' },
+                { id: 'market', icon: 'shopping-bag', label: '토큰 상점' },
+                { id: 'ranking', icon: 'bar-chart-2', label: '명예의 전당' },
+                { id: 'lost', icon: 'book-heart', label: '분실물 도감' }
+            ];
+
+            return (
+                <div className="flex h-screen bg-[#FFF5F8] font-sans text-gray-800 overflow-hidden w-full relative selection:bg-pink-200">
+                    {/* 데스크탑 사이드바 (플로팅 & 라운드 스타일) */}
+                    <aside className="w-72 bg-white/80 backdrop-blur-xl border border-white flex-col z-20 hidden md:flex m-4 rounded-[2.5rem] shadow-[0_10px_40px_rgba(244,114,182,0.1)]">
+                        <div className="p-8 pt-10 text-center">
+                            <div className="w-16 h-16 bg-gradient-to-br from-pink-300 to-purple-300 rounded-[1.5rem] flex items-center justify-center mx-auto mb-4 shadow-lg shadow-pink-200">
+                                <i data-lucide="school" className="w-8 h-8 text-white"></i>
+                            </div>
+                            <h1 className="font-bubbly text-2xl text-gray-800 leading-tight mb-6">우리가 발전 시키는 학교</h1>
+                            <div className="bg-pink-50 text-pink-600 px-4 py-3 rounded-[1.5rem] font-bold flex items-center justify-center gap-2 border border-pink-100">
+                                <span className="text-sm">내 지갑</span>
+                                <span className="text-xl flex items-center">🪙 {tokens.toLocaleString()}</span>
+                            </div>
+                        </div>
+                        <nav className="flex-1 overflow-y-auto custom-scrollbar p-6 flex flex-col gap-3">
+                            {navItems.map(item => (
+                                <button 
+                                    key={item.id} 
+                                    onClick={() => setView(item.id)}
+                                    className={`flex items-center gap-4 w-full p-4 rounded-[1.5rem] transition-all duration-300 font-bold ${
+                                        view === item.id 
+                                        ? 'bg-gradient-to-r from-pink-100 to-rose-50 text-pink-600 shadow-sm border border-pink-100 transform scale-105' 
+                                        : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                                    }`}>
+                                    <i data-lucide={item.icon} className={`w-5 h-5 ${view === item.id ? 'stroke-[3]' : 'stroke-2'}`}></i>
+                                    <span>{item.label}</span>
+                                </button>
+                            ))}
+                        </nav>
+                    </aside>
+
+                    {/* 메인 컨텐츠 영역 */}
+                    <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
+                        {/* 모바일 헤더 (소프트 스타일) */}
+                        <header className="md:hidden sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-pink-50 p-4 flex justify-between items-center rounded-b-[2rem] shadow-sm m-2 mt-0">
+                            <h1 className="font-bubbly text-xl text-gray-800 tracking-tight truncate flex items-center gap-2">
+                                <i data-lucide="school" className="text-pink-400 w-5 h-5"></i> 우리학교
+                            </h1>
+                            <div className="bg-pink-50 text-pink-600 px-4 py-2 rounded-full font-bold flex items-center gap-1 border border-pink-100 text-sm">
+                                <span>🪙</span> {tokens}
+                            </div>
+                        </header>
+
+                        {/* 뷰 컨텐츠 */}
+                        <div className="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-10 pb-28 md:pb-10">
+                            <div className="max-w-6xl mx-auto w-full">
+                                {view === 'home' && <HomeView />}
+                                {view === 'report' && <ReportView addTokens={addTokens} showModal={showModal} />}
+                                {view === 'meal' && <MealCheckView addTokens={addTokens} showModal={showModal} />}
+                                {view === 'education' && <EducationView addTokens={addTokens} showModal={showModal} />}
+                                {view === 'market' && <MarketView tokens={tokens} setTokens={setTokens} showModal={showModal} />}
+                                {view === 'ranking' && <RankingView />}
+                                {view === 'lost' && <LostFoundView foundItems={foundItems} setFoundItems={setFoundItems} addTokens={addTokens} showModal={showModal} />}
+                            </div>
+                        </div>
+
+                        {/* 모바일 하단 플로팅 네비게이션 */}
+                        <nav className="md:hidden fixed bottom-4 left-4 right-4 bg-white/90 backdrop-blur-xl border border-white flex justify-around items-center px-2 py-3 shadow-[0_10px_30px_rgba(244,114,182,0.15)] z-40 rounded-[2rem]">
+                            {navItems.map(item => (
+                                <button 
+                                    key={item.id} 
+                                    onClick={() => setView(item.id)}
+                                    className={`flex flex-col items-center justify-center w-full py-2 rounded-2xl transition-all duration-300 ${
+                                        view === item.id ? 'text-pink-500 bg-pink-50 transform -translate-y-1' : 'text-gray-400 hover:text-gray-600'
+                                    }`}>
+                                    <i data-lucide={item.icon} className={`w-6 h-6 mb-1 ${view === item.id ? 'stroke-[2.5]' : 'stroke-2'}`}></i>
+                                    <span className="text-[10px] font-bold">{item.label}</span>
+                                </button>
+                            ))}
+                        </nav>
+                    </main>
+
+                    <Modal 
+                        isOpen={modal.isOpen} 
+                        title={modal.title} 
+                        content={modal.content} 
+                        onClose={closeModal} 
+                    />
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
